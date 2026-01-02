@@ -114,12 +114,21 @@
         <span>🔍 ARA:</span>
         <input type="text" id="searchBox" placeholder="İsim, Tel, Not..." onkeyup="renderTable()" style="width:140px;">
         
+        <select id="filterStatus" onchange="renderTable()" style="width:110px;">
+            <option value="all">Tüm Durumlar</option>
+            <option>Satılık</option>
+            <option>Kiralık</option>
+            <option>Devren</option>
+        </select>
+
         <select id="filterRooms" onchange="renderTable()" style="width:120px;"><option value="all">Tüm Odalar</option></select>
 
         <select id="filterDistrict" onchange="handleFilterDistrictChange()"><option value="all">Tüm İlçeler</option></select>
         <select id="filterNeighborhood" onchange="renderTable()"><option value="all">Tüm Mahalleler</option></select>
+        
         <input type="number" id="filterMinPrice" placeholder="Min TL" onkeyup="renderTable()" style="width:80px;">
         <input type="number" id="filterMaxPrice" placeholder="Max TL" onkeyup="renderTable()" style="width:80px;">
+        
         <button onclick="window.print()" style="margin-left:auto; background:#8e44ad; border:none; color:white; padding:8px 15px; border-radius:4px; cursor:pointer;">🖨️ YAZDIR</button>
     </div>
 
@@ -284,7 +293,6 @@
     // --- YEDEKLEME (.TKT) ---
     function downloadData() {
         // İnsan tarafından okunabilir, düzenli yapı (Pretty Print)
-        // null, 4 parametresi JSON'u satır satır ve girintili yazar.
         const content = JSON.stringify(portfolio, null, 4);
         
         const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(content);
@@ -325,7 +333,8 @@
         tbody.innerHTML = '';
         
         const term = document.getElementById('searchBox').value.toLowerCase();
-        const fRoom = document.getElementById('filterRooms').value; // ODA FİLTRESİ
+        const fStatus = document.getElementById('filterStatus').value; // YENİ STATUS FİLTRESİ
+        const fRoom = document.getElementById('filterRooms').value; 
         const fDist = document.getElementById('filterDistrict').value;
         const fNeigh = document.getElementById('filterNeighborhood').value;
         const minP = parsePrice(document.getElementById('filterMinPrice').value);
@@ -335,11 +344,14 @@
             const txt = (item.district + item.neighborhood + item.ref + item.phone + item.desc + item.type).toLowerCase();
             const p = parsePrice(item.price);
             
-            // Oda kontrolü: 'all' ise geç, değilse eşleşmeli
+            // Oda kontrolü
             const roomMatch = (fRoom === 'all') || (item.rooms === fRoom);
+            // Durum Kontrolü (Satılık/Kiralık)
+            const statusMatch = (fStatus === 'all') || (item.status === fStatus);
 
             return txt.includes(term) &&
                    roomMatch &&
+                   statusMatch &&
                    (fDist === 'all' || item.district === fDist) &&
                    (fNeigh === 'all' || item.neighborhood === fNeigh) &&
                    (minP === 0 || p >= minP) && (maxP === 0 || p <= maxP);
