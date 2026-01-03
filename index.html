@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KARACABAYRE.EST Portföy Yönetimi (Final v2)</title>
+    <title>KARACABAYRE.EST Portföy Yönetimi (Final v3)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -14,7 +14,7 @@
             --sold: #d63031;    /* Satıldı/Kiralandı Kırmızısı */
         }
         body { font-family: 'Segoe UI', sans-serif; background: #eef2f3; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 1700px; margin: 0 auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .container { max-width: 1750px; margin: 0 auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
         /* Header */
         header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
@@ -24,7 +24,7 @@
         
         /* Form */
         .input-panel { background: #fdfdfd; padding: 20px; border: 1px solid #ddd; border-left: 6px solid var(--primary); margin-bottom: 30px; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; }
         .form-group label { display: block; font-size: 11px; font-weight: 700; margin-bottom: 5px; color: #555; text-transform: uppercase; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
         
@@ -48,7 +48,7 @@
         .badge { padding: 4px 8px; border-radius: 4px; color: white; font-size: 11px; font-weight: bold; display:inline-block; }
         .satilik { background: var(--secondary); } 
         .kiralik { background: #e67e22; }
-        .kirmizi-etiket { background: var(--sold) !important; } /* Satıldı/Kiralandı için */
+        .kirmizi-etiket { background: var(--sold) !important; }
 
         /* Filtre */
         .filter-bar { background: var(--primary); padding: 15px; border-radius: 6px; display: flex; gap: 10px; flex-wrap: wrap; color: white; align-items: center; }
@@ -58,29 +58,29 @@
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
         .modal-content { background: white; margin: 10% auto; padding: 30px; width: 50%; border-radius: 8px; position: relative; }
 
-        /* YAZDIRMA (PRINT) ÖZEL AYARLARI */
-        .print-only { display: none; } /* Ekranda gizli */
+        /* YAZDIRMA AYARLARI */
+        .print-only { display: none; }
         
         @media print { 
             .input-panel, .filter-bar, .backup-controls { display: none !important; } 
-            .no-print { display: none !important; } /* Ekranda görünen ama çıktıda gizlenenler */
-            .print-only { display: table-cell !important; } /* Sadece çıktıda görünenler */
+            .no-print { display: none !important; }
+            .print-only { display: table-cell !important; }
             
             body { background: white; padding: 0; margin: 0; }
             .container { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
-            table { width: 100%; font-size: 11px; }
-            th, td { border: 1px solid #ddd; padding: 5px; color: black; }
-            th { background-color: #eee !important; color: black !important; }
-            .badge { border: 1px solid #000; color: black !important; background: none !important; } /* Renk tasarrufu */
+            table { width: 100%; font-size: 10px; }
+            th, td { border: 1px solid #ddd; padding: 4px; color: black; }
+            th { background-color: #eee !important; color: black !important; font-weight: bold; }
             
-            /* Sütun Genişlikleri Ayarı (Yazıcı İçin) */
+            /* Sütun Genişlikleri (Yazıcı) */
             th:nth-child(1) { width: 8%; } /* Cins */
-            th:nth-child(2) { width: 15%; } /* Lokasyon */
-            th:nth-child(3) { width: 10%; } /* Özellik */
-            th:nth-child(4) { width: 10%; } /* Fiyat */
-            th:nth-child(5) { width: 15%; } /* Müşteri */
-            th:nth-child(6) { width: 10%; } /* Yetki */
-            th.print-only { width: 32%; }   /* Açıklama (Geniş alan) */
+            th:nth-child(2) { width: 13%; } /* Lokasyon */
+            th:nth-child(3) { width: 8%; } /* Özellik */
+            th:nth-child(4) { width: 10%; } /* m2 */
+            th:nth-child(5) { width: 9%; } /* Fiyat */
+            th:nth-child(6) { width: 14%; } /* Müşteri */
+            th:nth-child(7) { width: 9%; } /* Yetki */
+            th.print-only { width: 29%; }   /* Açıklama */
         }
     </style>
 </head>
@@ -123,6 +123,10 @@
             <div class="form-group"><label>Mahalle</label><select id="inpNeighborhood"><option value="">Önce İlçe</option></select></div>
             <div class="form-group"><label>Oda</label><select id="inpRooms"></select></div>
             <div class="form-group"><label>Kat</label><select id="inpFloor"></select></div>
+            
+            <div class="form-group"><label>Brüt m²</label><input type="number" id="inpGross" placeholder="m²"></div>
+            <div class="form-group"><label>Net m²</label><input type="number" id="inpNet" placeholder="m²"></div>
+
             <div class="form-group"><label>Fiyat (TL)</label><input type="text" id="inpPrice" placeholder="Örn: 5.000.000" oninput="formatCurrency(this)"></div>
 
             <div class="auth-box">
@@ -166,16 +170,18 @@
     <table id="portfolioTable">
         <thead>
             <tr>
-                <th width="10%">Cins/Tür</th>
-                <th width="15%">Lokasyon</th>
-                <th width="10%">Özellikler</th>
-                <th width="10%">Fiyat</th>
-                <th width="15%">Müşteri / Tel</th>
-                <th width="10%">Yetki</th>
+                <th width="8%">Cins/Tür</th>
+                <th width="12%">Lokasyon</th>
+                <th width="8%">Özellikler</th>
+                <th width="10%">m² (Brüt/Net)</th> 
                 
-                <th class="no-print" width="5%" style="text-align:center;">Link</th>
-                <th class="no-print" width="5%" style="text-align:center;">Not</th>
-                <th class="no-print" width="10%">İşlem</th>
+                <th width="9%">Fiyat</th>
+                <th width="14%">Müşteri / Tel</th>
+                <th width="9%">Yetki</th>
+                
+                <th class="no-print" width="4%" style="text-align:center;">Link</th>
+                <th class="no-print" width="4%" style="text-align:center;">Not</th>
+                <th class="no-print" width="8%">İşlem</th>
                 
                 <th class="print-only">Açıklama / Notlar</th>
             </tr>
@@ -193,7 +199,6 @@
 </div>
 
 <script>
-    // --- VERİLER ---
     const antalyaData = {
         "Muratpaşa": ["Lara", "Fener", "Çağlayan", "Güzeloba", "Meydankavağı", "Şirinyalı", "Yeşilbahçe", "Zerdalilik", "Varlık", "Kızıltoprak", "Konuksever", "Etiler"],
         "Konyaaltı": ["Liman", "Hurma", "Sarısu", "Uncalı", "Molla Yusuf", "Gürsu", "Altınkum", "Arapsuyu", "Toros", "Pınarbaşı"],
@@ -205,13 +210,11 @@
     const floorList = ["Seçiniz...", "Giriş Altı Kot 4", "Giriş Altı Kot 3", "Giriş Altı Kot 2", "Giriş Altı Kot 1", "Bodrum", "Zemin", "Bahçe Katı", "Giriş", "Yüksek Giriş", "Müstakil", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "20+", "30+"];
     const roomList = ["Seçiniz...", "Stüdyo (1+0)", "1+1", "1.5+1", "2+0", "2+1", "2.5+1", "3+1", "3.5+1", "4+1", "4+2", "5+1", "5+2", "Villa", "Komple Bina"];
 
-    // --- DEPOLAMA ---
     let portfolio = JSON.parse(localStorage.getItem('KaracabayRE_EST_DB')) || [];
     let editingId = null;
 
     window.onload = function() { populateSelects(); renderTable(); };
 
-    // --- FORMATLAYICILAR ---
     function formatPhone(input) {
         let numbers = input.value.replace(/\D/g, '');
         if (numbers.length === 0) { input.value = ''; return; }
@@ -232,7 +235,6 @@
         input.value = val.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     }
 
-    // --- CRUD ---
     function handleSave() {
         const data = {
             id: editingId ? editingId : Date.now(),
@@ -242,6 +244,8 @@
             neighborhood: document.getElementById('inpNeighborhood').value,
             rooms: document.getElementById('inpRooms').value,
             floor: document.getElementById('inpFloor').value,
+            gross: document.getElementById('inpGross').value, // YENİ
+            net: document.getElementById('inpNet').value, // YENİ
             price: document.getElementById('inpPrice').value,
             authStart: document.getElementById('inpAuthStart').value,
             authEnd: document.getElementById('inpAuthEnd').value,
@@ -279,6 +283,8 @@
         setTimeout(() => { document.getElementById('inpNeighborhood').value = item.neighborhood; }, 50);
         document.getElementById('inpRooms').value = item.rooms;
         document.getElementById('inpFloor').value = item.floor;
+        document.getElementById('inpGross').value = item.gross || ''; // YENİ
+        document.getElementById('inpNet').value = item.net || ''; // YENİ
         document.getElementById('inpPrice').value = item.price;
         document.getElementById('inpAuthStart').value = item.authStart;
         document.getElementById('inpAuthEnd').value = item.authEnd;
@@ -310,7 +316,6 @@
 
     function saveToDisk() { localStorage.setItem('KaracabayRE_EST_DB', JSON.stringify(portfolio)); }
 
-    // --- YEDEKLEME ---
     function downloadData() {
         const content = JSON.stringify(portfolio, null, 4);
         const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(content);
@@ -335,7 +340,6 @@
         reader.readAsText(file);
     }
 
-    // --- TABLO ---
     function renderTable() {
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = '';
@@ -361,14 +365,13 @@
         });
 
         filtered.forEach(item => {
-            // RENK BELİRLEME MANTIĞI
             let badgeClass = '';
             if(item.status === 'Satıldı' || item.status === 'Kiralandı') {
-                badgeClass = 'kirmizi-etiket'; // Kırmızı
+                badgeClass = 'kirmizi-etiket'; 
             } else if(item.status === 'Kiralık') {
-                badgeClass = 'kiralik'; // Turuncu
+                badgeClass = 'kiralik';
             } else {
-                badgeClass = 'satilik'; // Mavi
+                badgeClass = 'satilik';
             }
             
             let authHtml = '<span style="color:#ccc;">-</span>';
@@ -383,12 +386,17 @@
 
             let btnLink = item.link ? `<button onclick="alert('Link:\\n${item.link}')" class="btn-icon no-print" style="background:#95a5a6; border:none; color:white; border-radius:3px; cursor:pointer; width:100%;">📂</button>` : '-';
             let btnDesc = item.desc ? `<button onclick="document.getElementById('modalText').innerText='${item.desc.replace(/\n/g,'\\n').replace(/'/g, "\\'")}'; document.getElementById('descModal').style.display='block';" class="btn-icon no-print" style="background:#9b59b6; border:none; color:white; border-radius:3px; cursor:pointer; width:100%;">📝</button>` : '-';
+            
+            // m2 Değerleri
+            let m2Display = (item.gross || '-') + ' / ' + (item.net || '-') + ' m²';
 
             tbody.innerHTML += `
                 <tr>
                     <td><span class="badge ${badgeClass}">${item.status}</span><br><small>${item.type}</small></td>
                     <td><b>${item.district}</b><br><small>${item.neighborhood}</small></td>
                     <td>${item.rooms || ''}<br><small>${item.floor || ''}</small></td>
+                    <td style="font-size:12px; font-weight:600; color:#555;">${m2Display}</td>
+                    
                     <td style="color:#27ae60; font-weight:bold;">${item.price} ₺</td>
                     <td>${item.ref}<br><small style="font-family:monospace; font-weight:bold;">${item.phone || ''}</small></td>
                     <td>${authHtml}</td>
@@ -401,7 +409,6 @@
         });
     }
 
-    // YARDIMCILAR
     function populateSelects() {
         const dS = document.getElementById('inpDistrict'); const fS = document.getElementById('filterDistrict');
         Object.keys(antalyaData).forEach(d => { dS.innerHTML += `<option>${d}</option>`; fS.innerHTML += `<option>${d}</option>`; });
