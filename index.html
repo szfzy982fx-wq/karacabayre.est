@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KARACABAYRE.EST Portföy Yönetimi (Final)</title>
+    <title>KARACABAYRE.EST Portföy Yönetimi (Final v2)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #2c3e50;
             --secondary: #3498db;
             --accent: #27ae60;
-            --danger: #c0392b;
+            --danger: #c0392b; /* Kırmızı */
+            --sold: #d63031;    /* Satıldı/Kiralandı Kırmızısı */
         }
         body { font-family: 'Segoe UI', sans-serif; background: #eef2f3; margin: 0; padding: 20px; color: #333; }
         .container { max-width: 1700px; margin: 0 auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        /* Header & Yedekleme */
+        /* Header */
         header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #eee; padding-bottom: 20px; margin-bottom: 20px; }
         .backup-controls { display: flex; gap: 10px; }
         .btn-backup { background: #f39c12; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; display: flex; align-items: center; gap: 5px; }
@@ -38,12 +39,16 @@
         .btn-cancel { background: #7f8c8d; color: white; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; display: none; }
 
         /* Tablo */
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; table-layout: fixed; }
         th { background: #34495e; color: white; padding: 12px; text-align: left; vertical-align: middle; }
-        td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: middle; word-wrap: break-word; }
         tr:hover { background: #f9f9f9; }
-        .badge { padding: 4px 8px; border-radius: 4px; color: white; font-size: 11px; font-weight: bold; }
-        .satilik { background: var(--secondary); } .kiralik { background: #e67e22; }
+        
+        /* Etiketler */
+        .badge { padding: 4px 8px; border-radius: 4px; color: white; font-size: 11px; font-weight: bold; display:inline-block; }
+        .satilik { background: var(--secondary); } 
+        .kiralik { background: #e67e22; }
+        .kirmizi-etiket { background: var(--sold) !important; } /* Satıldı/Kiralandı için */
 
         /* Filtre */
         .filter-bar { background: var(--primary); padding: 15px; border-radius: 6px; display: flex; gap: 10px; flex-wrap: wrap; color: white; align-items: center; }
@@ -52,9 +57,31 @@
         /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
         .modal-content { background: white; margin: 10% auto; padding: 30px; width: 50%; border-radius: 8px; position: relative; }
+
+        /* YAZDIRMA (PRINT) ÖZEL AYARLARI */
+        .print-only { display: none; } /* Ekranda gizli */
         
-        /* Print */
-        @media print { .input-panel, .filter-bar, .backup-controls, th:last-child, td:last-child { display: none !important; } }
+        @media print { 
+            .input-panel, .filter-bar, .backup-controls { display: none !important; } 
+            .no-print { display: none !important; } /* Ekranda görünen ama çıktıda gizlenenler */
+            .print-only { display: table-cell !important; } /* Sadece çıktıda görünenler */
+            
+            body { background: white; padding: 0; margin: 0; }
+            .container { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
+            table { width: 100%; font-size: 11px; }
+            th, td { border: 1px solid #ddd; padding: 5px; color: black; }
+            th { background-color: #eee !important; color: black !important; }
+            .badge { border: 1px solid #000; color: black !important; background: none !important; } /* Renk tasarrufu */
+            
+            /* Sütun Genişlikleri Ayarı (Yazıcı İçin) */
+            th:nth-child(1) { width: 8%; } /* Cins */
+            th:nth-child(2) { width: 15%; } /* Lokasyon */
+            th:nth-child(3) { width: 10%; } /* Özellik */
+            th:nth-child(4) { width: 10%; } /* Fiyat */
+            th:nth-child(5) { width: 15%; } /* Müşteri */
+            th:nth-child(6) { width: 10%; } /* Yetki */
+            th.print-only { width: 32%; }   /* Açıklama (Geniş alan) */
+        }
     </style>
 </head>
 <body>
@@ -67,7 +94,6 @@
         </div>
         <div class="backup-controls">
             <input type="file" id="fileUpload" style="display:none;" onchange="uploadData(this)">
-            
             <button class="btn-backup btn-upload" onclick="document.getElementById('fileUpload').click()">📂 YEDEK YÜKLE (.TKT)</button>
             <button class="btn-backup" onclick="downloadData()">💾 YEDEKLE (.TKT)</button>
         </div>
@@ -81,7 +107,18 @@
         
         <div class="form-grid">
             <div class="form-group"><label>Menkul Cinsi</label><select id="inpType"><option>Daire</option><option>Villa</option><option>Arsa</option><option>İşyeri</option><option>Tarla</option></select></div>
-            <div class="form-group"><label>İşlem Türü</label><select id="inpStatus"><option>Satılık</option><option>Kiralık</option><option>Devren</option></select></div>
+            
+            <div class="form-group">
+                <label>İşlem Türü</label>
+                <select id="inpStatus">
+                    <option>Satılık</option>
+                    <option>Kiralık</option>
+                    <option>Devren</option>
+                    <option style="color:red; font-weight:bold;">Satıldı</option>
+                    <option style="color:red; font-weight:bold;">Kiralandı</option>
+                </select>
+            </div>
+            
             <div class="form-group"><label>İlçe</label><select id="inpDistrict" onchange="loadMahalleler('inpDistrict', 'inpNeighborhood')"><option value="">Seçiniz</option></select></div>
             <div class="form-group"><label>Mahalle</label><select id="inpNeighborhood"><option value="">Önce İlçe</option></select></div>
             <div class="form-group"><label>Oda</label><select id="inpRooms"></select></div>
@@ -94,12 +131,7 @@
             </div>
 
             <div class="form-group"><label>Müşteri Ad Soyad</label><input type="text" id="inpRef"></div>
-            
-            <div class="form-group">
-                <label>Müşteri Telefon</label>
-                <input type="text" id="inpPhone" placeholder="0 (5XX) XXX XX XX" maxlength="17" oninput="formatPhone(this)">
-            </div>
-            
+            <div class="form-group"><label>Müşteri Telefon</label><input type="text" id="inpPhone" placeholder="0 (5XX) XXX XX XX" maxlength="17" oninput="formatPhone(this)"></div>
             <div class="form-group"><label>Dosya / Link</label><input type="text" id="inpLink"></div>
             <div class="form-group" style="grid-column:span 2;"><label>Açıklama</label><textarea id="inpDesc"></textarea></div>
 
@@ -119,31 +151,33 @@
             <option>Satılık</option>
             <option>Kiralık</option>
             <option>Devren</option>
+            <option style="color:red;">Satıldı</option>
+            <option style="color:red;">Kiralandı</option>
         </select>
 
         <select id="filterRooms" onchange="renderTable()" style="width:120px;"><option value="all">Tüm Odalar</option></select>
-
         <select id="filterDistrict" onchange="handleFilterDistrictChange()"><option value="all">Tüm İlçeler</option></select>
         <select id="filterNeighborhood" onchange="renderTable()"><option value="all">Tüm Mahalleler</option></select>
-        
         <input type="number" id="filterMinPrice" placeholder="Min TL" onkeyup="renderTable()" style="width:80px;">
         <input type="number" id="filterMaxPrice" placeholder="Max TL" onkeyup="renderTable()" style="width:80px;">
-        
         <button onclick="window.print()" style="margin-left:auto; background:#8e44ad; border:none; color:white; padding:8px 15px; border-radius:4px; cursor:pointer;">🖨️ YAZDIR</button>
     </div>
 
     <table id="portfolioTable">
         <thead>
             <tr>
-                <th>Cins/Tür</th>
-                <th>Lokasyon</th>
-                <th>Özellikler</th>
-                <th>Fiyat</th>
-                <th>Müşteri / Tel</th>
-                <th>Yetki</th>
-                <th width="50" style="text-align:center;">Link</th>
-                <th width="50" style="text-align:center;">Not</th>
-                <th width="80">İşlem</th>
+                <th width="10%">Cins/Tür</th>
+                <th width="15%">Lokasyon</th>
+                <th width="10%">Özellikler</th>
+                <th width="10%">Fiyat</th>
+                <th width="15%">Müşteri / Tel</th>
+                <th width="10%">Yetki</th>
+                
+                <th class="no-print" width="5%" style="text-align:center;">Link</th>
+                <th class="no-print" width="5%" style="text-align:center;">Not</th>
+                <th class="no-print" width="10%">İşlem</th>
+                
+                <th class="print-only">Açıklama / Notlar</th>
             </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -168,7 +202,6 @@
         "Döşemealtı": ["Yeniköy", "Yeşilbayır", "Altınkale", "Bahçeyaka", "Düzlerçamı"],
         "Aksu": ["Altıntaş", "Çalkaya", "Güzelyurt", "Mandırlar"]
     };
-    
     const floorList = ["Seçiniz...", "Giriş Altı Kot 4", "Giriş Altı Kot 3", "Giriş Altı Kot 2", "Giriş Altı Kot 1", "Bodrum", "Zemin", "Bahçe Katı", "Giriş", "Yüksek Giriş", "Müstakil", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "20+", "30+"];
     const roomList = ["Seçiniz...", "Stüdyo (1+0)", "1+1", "1.5+1", "2+0", "2+1", "2.5+1", "3+1", "3.5+1", "4+1", "4+2", "5+1", "5+2", "Villa", "Komple Bina"];
 
@@ -176,10 +209,7 @@
     let portfolio = JSON.parse(localStorage.getItem('KaracabayRE_EST_DB')) || [];
     let editingId = null;
 
-    window.onload = function() {
-        populateSelects();
-        renderTable();
-    };
+    window.onload = function() { populateSelects(); renderTable(); };
 
     // --- FORMATLAYICILAR ---
     function formatPhone(input) {
@@ -229,17 +259,13 @@
         } else {
             portfolio.push(data);
         }
-
-        saveToDisk();
-        renderTable();
-        resetForm();
+        saveToDisk(); renderTable(); resetForm();
     }
 
     function editRecord(id) {
         const item = portfolio.find(p => p.id === id);
         if(!item) return;
         editingId = id;
-        
         document.getElementById('formTitle').innerText = "✏️ Düzenleniyor...";
         document.getElementById('btnSave').innerText = "GÜNCELLE";
         document.getElementById('btnSave').style.background = "#f39c12"; 
@@ -260,16 +286,13 @@
         document.getElementById('inpPhone').value = item.phone;
         document.getElementById('inpLink').value = item.link;
         document.getElementById('inpDesc').value = item.desc;
-        
         window.scrollTo(0,0);
     }
 
     function deleteFromForm() {
         if(confirm('SİLİNECEK! Onaylıyor musunuz?')) {
             portfolio = portfolio.filter(item => item.id !== editingId);
-            saveToDisk();
-            renderTable();
-            resetForm();
+            saveToDisk(); renderTable(); resetForm();
         }
     }
 
@@ -280,31 +303,21 @@
         document.getElementById('btnSave').style.background = "#27ae60";
         document.getElementById('btnDelete').style.display = "none";
         document.getElementById('btnCancel').style.display = "none";
-        
         document.querySelectorAll('.input-panel input, .input-panel select, .input-panel textarea').forEach(i => i.value = '');
         document.getElementById('inpType').value = "Daire";
         document.getElementById('inpStatus').value = "Satılık";
     }
 
-    function saveToDisk() {
-        localStorage.setItem('KaracabayRE_EST_DB', JSON.stringify(portfolio));
-    }
+    function saveToDisk() { localStorage.setItem('KaracabayRE_EST_DB', JSON.stringify(portfolio)); }
 
-    // --- YEDEKLEME (.TKT) ---
+    // --- YEDEKLEME ---
     function downloadData() {
-        // İnsan tarafından okunabilir, düzenli yapı (Pretty Print)
         const content = JSON.stringify(portfolio, null, 4);
-        
         const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(content);
-        const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href", dataStr);
-        const date = new Date().toISOString().slice(0,10);
-        
-        // .tkt UZANTISI
-        downloadAnchorNode.setAttribute("download", "Karacabay_Yedek_" + date + ".tkt");
-        document.body.appendChild(downloadAnchorNode);
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
+        const a = document.createElement('a');
+        a.href = dataStr;
+        a.download = "Karacabay_Yedek_" + new Date().toISOString().slice(0,10) + ".tkt";
+        document.body.appendChild(a); a.click(); a.remove();
     }
 
     function uploadData(input) {
@@ -315,14 +328,9 @@
             try {
                 const loadedData = JSON.parse(e.target.result);
                 if(confirm("Yedek yüklensin mi? Mevcut liste silinecek.")) {
-                    portfolio = loadedData;
-                    saveToDisk();
-                    renderTable();
-                    alert("Yedek başarıyla yüklendi!");
+                    portfolio = loadedData; saveToDisk(); renderTable(); alert("Yedek yüklendi!");
                 }
-            } catch(err) {
-                alert("Dosya bozuk veya hatalı format!");
-            }
+            } catch(err) { alert("Hatalı dosya!"); }
         };
         reader.readAsText(file);
     }
@@ -333,7 +341,7 @@
         tbody.innerHTML = '';
         
         const term = document.getElementById('searchBox').value.toLowerCase();
-        const fStatus = document.getElementById('filterStatus').value; // YENİ STATUS FİLTRESİ
+        const fStatus = document.getElementById('filterStatus').value;
         const fRoom = document.getElementById('filterRooms').value; 
         const fDist = document.getElementById('filterDistrict').value;
         const fNeigh = document.getElementById('filterNeighborhood').value;
@@ -344,21 +352,24 @@
             const txt = (item.district + item.neighborhood + item.ref + item.phone + item.desc + item.type).toLowerCase();
             const p = parsePrice(item.price);
             
-            // Oda kontrolü
-            const roomMatch = (fRoom === 'all') || (item.rooms === fRoom);
-            // Durum Kontrolü (Satılık/Kiralık)
-            const statusMatch = (fStatus === 'all') || (item.status === fStatus);
-
             return txt.includes(term) &&
-                   roomMatch &&
-                   statusMatch &&
+                   ((fRoom === 'all') || (item.rooms === fRoom)) &&
+                   ((fStatus === 'all') || (item.status === fStatus)) &&
                    (fDist === 'all' || item.district === fDist) &&
                    (fNeigh === 'all' || item.neighborhood === fNeigh) &&
                    (minP === 0 || p >= minP) && (maxP === 0 || p <= maxP);
         });
 
         filtered.forEach(item => {
-            const badgeClass = item.status === 'Satılık' ? 'satilik' : 'kiralik';
+            // RENK BELİRLEME MANTIĞI
+            let badgeClass = '';
+            if(item.status === 'Satıldı' || item.status === 'Kiralandı') {
+                badgeClass = 'kirmizi-etiket'; // Kırmızı
+            } else if(item.status === 'Kiralık') {
+                badgeClass = 'kiralik'; // Turuncu
+            } else {
+                badgeClass = 'satilik'; // Mavi
+            }
             
             let authHtml = '<span style="color:#ccc;">-</span>';
             if(item.authEnd) {
@@ -370,9 +381,8 @@
                 authHtml = `<small style="color:#777">Bşl: ${dStart}</small><br><strong style="color:${color}; ${decor}">${dEnd}</strong>`;
             }
 
-            // AYRI SÜTUNLAR İÇİN BUTONLAR
-            let btnLink = item.link ? `<button onclick="alert('Dosya/Link:\\n${item.link}')" class="btn-icon" style="background:#95a5a6; border:none; color:white; border-radius:3px; cursor:pointer; width:100%;">📂</button>` : '-';
-            let btnDesc = item.desc ? `<button onclick="document.getElementById('modalText').innerText='${item.desc.replace(/\n/g,'\\n').replace(/'/g, "\\'")}'; document.getElementById('descModal').style.display='block';" class="btn-icon" style="background:#9b59b6; border:none; color:white; border-radius:3px; cursor:pointer; width:100%;">📝</button>` : '-';
+            let btnLink = item.link ? `<button onclick="alert('Link:\\n${item.link}')" class="btn-icon no-print" style="background:#95a5a6; border:none; color:white; border-radius:3px; cursor:pointer; width:100%;">📂</button>` : '-';
+            let btnDesc = item.desc ? `<button onclick="document.getElementById('modalText').innerText='${item.desc.replace(/\n/g,'\\n').replace(/'/g, "\\'")}'; document.getElementById('descModal').style.display='block';" class="btn-icon no-print" style="background:#9b59b6; border:none; color:white; border-radius:3px; cursor:pointer; width:100%;">📝</button>` : '-';
 
             tbody.innerHTML += `
                 <tr>
@@ -382,9 +392,10 @@
                     <td style="color:#27ae60; font-weight:bold;">${item.price} ₺</td>
                     <td>${item.ref}<br><small style="font-family:monospace; font-weight:bold;">${item.phone || ''}</small></td>
                     <td>${authHtml}</td>
-                    <td style="text-align:center;">${btnLink}</td>
-                    <td style="text-align:center;">${btnDesc}</td>
-                    <td><button onclick="editRecord(${item.id})" style="background:#3498db; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">DÜZENLE</button></td>
+                    <td class="no-print" style="text-align:center;">${btnLink}</td>
+                    <td class="no-print" style="text-align:center;">${btnDesc}</td>
+                    <td class="no-print"><button onclick="editRecord(${item.id})" style="background:#3498db; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">DÜZENLE</button></td>
+                    <td class="print-only" style="vertical-align:top;">${item.desc || '-'}</td>
                 </tr>
             `;
         });
@@ -392,34 +403,19 @@
 
     // YARDIMCILAR
     function populateSelects() {
-        const dS = document.getElementById('inpDistrict');
-        const fS = document.getElementById('filterDistrict');
-        Object.keys(antalyaData).forEach(d => {
-            dS.innerHTML += `<option>${d}</option>`;
-            fS.innerHTML += `<option>${d}</option>`;
-        });
-        
-        // ODA LİSTESİ (HEM INPUT HEM FİLTRE İÇİN)
-        const rS = document.getElementById('inpRooms');
-        const rF = document.getElementById('filterRooms');
-        roomList.forEach(r => {
-            rS.innerHTML += `<option>${r}</option>`;
-            rF.innerHTML += `<option>${r}</option>`;
-        });
-        
-        const flS = document.getElementById('inpFloor');
-        floorList.forEach(f => flS.innerHTML += `<option>${f}</option>`);
+        const dS = document.getElementById('inpDistrict'); const fS = document.getElementById('filterDistrict');
+        Object.keys(antalyaData).forEach(d => { dS.innerHTML += `<option>${d}</option>`; fS.innerHTML += `<option>${d}</option>`; });
+        const rS = document.getElementById('inpRooms'); const rF = document.getElementById('filterRooms');
+        roomList.forEach(r => { rS.innerHTML += `<option>${r}</option>`; rF.innerHTML += `<option>${r}</option>`; });
+        const flS = document.getElementById('inpFloor'); floorList.forEach(f => flS.innerHTML += `<option>${f}</option>`);
     }
 
     function loadMahalleler(src, trg) {
-        const val = document.getElementById(src).value;
-        const t = document.getElementById(trg);
+        const val = document.getElementById(src).value; const t = document.getElementById(trg);
         t.innerHTML = '<option value="">Seçiniz</option>';
         if(antalyaData[val]) antalyaData[val].forEach(m => t.innerHTML += `<option>${m}</option>`);
-        
         if(src === 'filterDistrict') {
-             const ft = document.getElementById('filterNeighborhood');
-             ft.innerHTML = '<option value="all">Tümü</option>';
+             const ft = document.getElementById('filterNeighborhood'); ft.innerHTML = '<option value="all">Tümü</option>';
              if(antalyaData[val]) antalyaData[val].forEach(m => ft.innerHTML += `<option>${m}</option>`);
              renderTable();
         }
