@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KARACABAYRE.EST Portföy Yönetimi (Final v4 - Full Antalya)</title>
+    <title>KARACABAYRE.EST Portföy Yönetimi (Final v5 - Düzeltilmiş)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -83,7 +83,7 @@
     <header>
         <div>
             <h1>🏢 KARACABAYRE.EST <span style="font-size:12px; color:#27ae60; border:1px solid #27ae60; padding:2px 8px; border-radius:10px;">HDD KAYIT AKTİF</span></h1>
-            <div style="font-size:13px; color:#666; margin-top:5px;">Veriler bilgisayarınızda saklanır. (19 İlçe Dahil)</div>
+            <div style="font-size:13px; color:#666; margin-top:5px;">Veriler bilgisayarınızda saklanır. (Mahalle Tamamlama Aktif)</div>
         </div>
         <div class="backup-controls">
             <input type="file" id="fileUpload" style="display:none;" onchange="uploadData(this)">
@@ -113,16 +113,16 @@
             </div>
             
             <div class="form-group">
-                <label>İlçe</label>
-                <select id="inpDistrict" onchange="loadMahalleler('inpDistrict', 'inpNeighborhoodList')">
+                <label>İlçe (Antalya)</label>
+                <select id="inpDistrict" onchange="loadMahalleler('inpDistrict', 'dl_mahalle_ekle')">
                     <option value="">Seçiniz</option>
                 </select>
             </div>
             
             <div class="form-group">
-                <label>Mahalle (Yaz veya Seç)</label>
-                <input list="neighborhoods" id="inpNeighborhood" placeholder="Mahalle yazın...">
-                <datalist id="neighborhoods"></datalist>
+                <label>Mahalle (Seç veya Yaz)</label>
+                <input type="text" list="dl_mahalle_ekle" id="inpNeighborhood" placeholder="Mahalle yazın..." autocomplete="off">
+                <datalist id="dl_mahalle_ekle"></datalist>
             </div>
             
             <div class="form-group"><label>Oda</label><select id="inpRooms"></select></div>
@@ -165,9 +165,10 @@
 
         <select id="filterRooms" onchange="renderTable()" style="width:120px;"><option value="all">Tüm Odalar</option></select>
         
-        <select id="filterDistrict" onchange="loadMahalleler('filterDistrict', 'filterNeighborhoodList')"><option value="all">Tüm İlçeler</option></select>
-        <input list="filterNeighborhoods" id="filterNeighborhood" placeholder="Mahalle Ara..." onchange="renderTable()" style="width:120px;">
-        <datalist id="filterNeighborhoods"></datalist>
+        <select id="filterDistrict" onchange="loadMahalleler('filterDistrict', 'dl_mahalle_filtre')"><option value="all">Tüm İlçeler</option></select>
+        
+        <input type="text" list="dl_mahalle_filtre" id="filterNeighborhood" placeholder="Mahalle Ara..." onkeyup="renderTable()" style="width:120px;" autocomplete="off">
+        <datalist id="dl_mahalle_filtre"></datalist>
 
         <input type="number" id="filterMinPrice" placeholder="Min TL" onkeyup="renderTable()" style="width:80px;">
         <input type="number" id="filterMaxPrice" placeholder="Max TL" onkeyup="renderTable()" style="width:80px;">
@@ -205,7 +206,7 @@
 </div>
 
 <script>
-    // --- ANTALYA TÜM İLÇELER VE MAHALLELERİ (Kapsamlı Veritabanı) ---
+    // --- ANTALYA VERİTABANI ---
     const antalyaData = {
         "Akseki": ["Merkez", "Bademli", "Cevizli", "Güçlüköy", "Kuyucak", "Süleymaniye", "Yarpuz"],
         "Aksu": ["Altıntaş", "Atatürk", "Barbaros", "Boztepe", "Cihadiye", "Çalkaya", "Çamköy", "Dumanlar", "Fatih", "Gökdere", "Güloluk", "Güzelyurt", "Hacıaliler", "Karaçallı", "Kemerağzı", "Konak", "Kundu", "Macun", "Mandırlar", "Murtuna", "Pınarlı", "Soğucaksu", "Solak", "Yurtpınar"],
@@ -262,7 +263,7 @@
             type: document.getElementById('inpType').value,
             status: document.getElementById('inpStatus').value,
             district: document.getElementById('inpDistrict').value,
-            neighborhood: document.getElementById('inpNeighborhood').value, // Manuel veya listeden gelen
+            neighborhood: document.getElementById('inpNeighborhood').value,
             rooms: document.getElementById('inpRooms').value,
             floor: document.getElementById('inpFloor').value,
             gross: document.getElementById('inpGross').value,
@@ -301,8 +302,8 @@
         document.getElementById('inpStatus').value = item.status;
         document.getElementById('inpDistrict').value = item.district;
         
-        // Mahalle listesini yükle ve değeri ata
-        loadMahalleler('inpDistrict', 'neighborhoods');
+        // Önce mahalleyi doldur, sonra değeri seç
+        loadMahalleler('inpDistrict', 'dl_mahalle_ekle');
         setTimeout(() => { document.getElementById('inpNeighborhood').value = item.neighborhood; }, 50);
         
         document.getElementById('inpRooms').value = item.rooms;
@@ -372,7 +373,7 @@
         const fStatus = document.getElementById('filterStatus').value;
         const fRoom = document.getElementById('filterRooms').value; 
         const fDist = document.getElementById('filterDistrict').value;
-        const fNeigh = document.getElementById('filterNeighborhood').value.toLowerCase(); // Text search
+        const fNeigh = document.getElementById('filterNeighborhood').value.toLowerCase();
         const minP = parsePrice(document.getElementById('filterMinPrice').value);
         const maxP = parsePrice(document.getElementById('filterMaxPrice').value);
 
@@ -432,7 +433,6 @@
 
     function populateSelects() {
         const dS = document.getElementById('inpDistrict'); const fS = document.getElementById('filterDistrict');
-        // İLÇELERİ SIRALAYALIM
         const sortedDistricts = Object.keys(antalyaData).sort();
         sortedDistricts.forEach(d => { dS.innerHTML += `<option>${d}</option>`; fS.innerHTML += `<option>${d}</option>`; });
         
@@ -443,12 +443,12 @@
 
     function loadMahalleler(src, trgId) {
         const val = document.getElementById(src).value;
-        const dataList = document.getElementById(trgId); // Bu bir DATALIST elementidir
+        const dataList = document.getElementById(trgId);
         
         // Önce temizle
         dataList.innerHTML = '';
         
-        // Eğer ilçe seçiliyse ve veritabanında varsa doldur
+        // Varsa doldur (Datalist option ekleme)
         if(antalyaData[val]) {
             antalyaData[val].sort().forEach(m => {
                 let opt = document.createElement('option');
@@ -456,15 +456,18 @@
                 dataList.appendChild(opt);
             });
         }
-        // Filtre tarafında tabloyu yenile (sadece filtre işleminde)
+        
+        // Eğer filtreyse, kutuyu da temizle
+        if(src === 'inpDistrict') {
+             document.getElementById('inpNeighborhood').value = '';
+        }
         if(src === 'filterDistrict') {
-             // Filtre kısmında mahalle text inputunu sıfırla
              document.getElementById('filterNeighborhood').value = '';
              renderTable();
         }
     }
     
-    function handleFilterDistrictChange() { loadMahalleler('filterDistrict', 'filterNeighborhoodList'); }
+    function handleFilterDistrictChange() { loadMahalleler('filterDistrict', 'dl_mahalle_filtre'); }
     function parsePrice(v) { return v ? parseInt(v.toString().replace(/\./g,'')) : 0; }
 </script>
 
