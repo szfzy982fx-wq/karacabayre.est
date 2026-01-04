@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KARACABAYRE.EST Portföy Yönetimi (Final v3)</title>
+    <title>KARACABAYRE.EST Portföy Yönetimi (Final v4 - Full Antalya)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary: #2c3e50;
             --secondary: #3498db;
             --accent: #27ae60;
-            --danger: #c0392b; /* Kırmızı */
-            --sold: #d63031;    /* Satıldı/Kiralandı Kırmızısı */
+            --danger: #c0392b;
+            --sold: #d63031;
         }
         body { font-family: 'Segoe UI', sans-serif; background: #eef2f3; margin: 0; padding: 20px; color: #333; }
         .container { max-width: 1750px; margin: 0 auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
@@ -44,7 +44,6 @@
         td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: middle; word-wrap: break-word; }
         tr:hover { background: #f9f9f9; }
         
-        /* Etiketler */
         .badge { padding: 4px 8px; border-radius: 4px; color: white; font-size: 11px; font-weight: bold; display:inline-block; }
         .satilik { background: var(--secondary); } 
         .kiralik { background: #e67e22; }
@@ -54,33 +53,27 @@
         .filter-bar { background: var(--primary); padding: 15px; border-radius: 6px; display: flex; gap: 10px; flex-wrap: wrap; color: white; align-items: center; }
         .filter-bar input, .filter-bar select { padding: 8px; border: none; border-radius: 4px; color: #333; }
 
-        /* Modal */
+        /* Modal & Print */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
         .modal-content { background: white; margin: 10% auto; padding: 30px; width: 50%; border-radius: 8px; position: relative; }
-
-        /* YAZDIRMA AYARLARI */
         .print-only { display: none; }
-        
         @media print { 
             .input-panel, .filter-bar, .backup-controls { display: none !important; } 
             .no-print { display: none !important; }
             .print-only { display: table-cell !important; }
-            
             body { background: white; padding: 0; margin: 0; }
             .container { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
             table { width: 100%; font-size: 10px; }
             th, td { border: 1px solid #ddd; padding: 4px; color: black; }
             th { background-color: #eee !important; color: black !important; font-weight: bold; }
-            
-            /* Sütun Genişlikleri (Yazıcı) */
-            th:nth-child(1) { width: 8%; } /* Cins */
-            th:nth-child(2) { width: 13%; } /* Lokasyon */
-            th:nth-child(3) { width: 8%; } /* Özellik */
-            th:nth-child(4) { width: 10%; } /* m2 */
-            th:nth-child(5) { width: 9%; } /* Fiyat */
-            th:nth-child(6) { width: 14%; } /* Müşteri */
-            th:nth-child(7) { width: 9%; } /* Yetki */
-            th.print-only { width: 29%; }   /* Açıklama */
+            th:nth-child(1) { width: 8%; } 
+            th:nth-child(2) { width: 13%; }
+            th:nth-child(3) { width: 8%; }
+            th:nth-child(4) { width: 10%; }
+            th:nth-child(5) { width: 9%; }
+            th:nth-child(6) { width: 14%; }
+            th:nth-child(7) { width: 9%; }
+            th.print-only { width: 29%; }
         }
     </style>
 </head>
@@ -90,7 +83,7 @@
     <header>
         <div>
             <h1>🏢 KARACABAYRE.EST <span style="font-size:12px; color:#27ae60; border:1px solid #27ae60; padding:2px 8px; border-radius:10px;">HDD KAYIT AKTİF</span></h1>
-            <div style="font-size:13px; color:#666; margin-top:5px;">Veriler bilgisayarınızda saklanır.</div>
+            <div style="font-size:13px; color:#666; margin-top:5px;">Veriler bilgisayarınızda saklanır. (19 İlçe Dahil)</div>
         </div>
         <div class="backup-controls">
             <input type="file" id="fileUpload" style="display:none;" onchange="uploadData(this)">
@@ -119,8 +112,19 @@
                 </select>
             </div>
             
-            <div class="form-group"><label>İlçe</label><select id="inpDistrict" onchange="loadMahalleler('inpDistrict', 'inpNeighborhood')"><option value="">Seçiniz</option></select></div>
-            <div class="form-group"><label>Mahalle</label><select id="inpNeighborhood"><option value="">Önce İlçe</option></select></div>
+            <div class="form-group">
+                <label>İlçe</label>
+                <select id="inpDistrict" onchange="loadMahalleler('inpDistrict', 'inpNeighborhoodList')">
+                    <option value="">Seçiniz</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Mahalle (Yaz veya Seç)</label>
+                <input list="neighborhoods" id="inpNeighborhood" placeholder="Mahalle yazın...">
+                <datalist id="neighborhoods"></datalist>
+            </div>
+            
             <div class="form-group"><label>Oda</label><select id="inpRooms"></select></div>
             <div class="form-group"><label>Kat</label><select id="inpFloor"></select></div>
             
@@ -160,8 +164,11 @@
         </select>
 
         <select id="filterRooms" onchange="renderTable()" style="width:120px;"><option value="all">Tüm Odalar</option></select>
-        <select id="filterDistrict" onchange="handleFilterDistrictChange()"><option value="all">Tüm İlçeler</option></select>
-        <select id="filterNeighborhood" onchange="renderTable()"><option value="all">Tüm Mahalleler</option></select>
+        
+        <select id="filterDistrict" onchange="loadMahalleler('filterDistrict', 'filterNeighborhoodList')"><option value="all">Tüm İlçeler</option></select>
+        <input list="filterNeighborhoods" id="filterNeighborhood" placeholder="Mahalle Ara..." onchange="renderTable()" style="width:120px;">
+        <datalist id="filterNeighborhoods"></datalist>
+
         <input type="number" id="filterMinPrice" placeholder="Min TL" onkeyup="renderTable()" style="width:80px;">
         <input type="number" id="filterMaxPrice" placeholder="Max TL" onkeyup="renderTable()" style="width:80px;">
         <button onclick="window.print()" style="margin-left:auto; background:#8e44ad; border:none; color:white; padding:8px 15px; border-radius:4px; cursor:pointer;">🖨️ YAZDIR</button>
@@ -174,7 +181,6 @@
                 <th width="12%">Lokasyon</th>
                 <th width="8%">Özellikler</th>
                 <th width="10%">m² (Brüt/Net)</th> 
-                
                 <th width="9%">Fiyat</th>
                 <th width="14%">Müşteri / Tel</th>
                 <th width="9%">Yetki</th>
@@ -199,18 +205,33 @@
 </div>
 
 <script>
+    // --- ANTALYA TÜM İLÇELER VE MAHALLELERİ (Kapsamlı Veritabanı) ---
     const antalyaData = {
-        "Muratpaşa": ["Lara", "Fener", "Çağlayan", "Güzeloba", "Meydankavağı", "Şirinyalı", "Yeşilbahçe", "Zerdalilik", "Varlık", "Kızıltoprak", "Konuksever", "Etiler"],
-        "Konyaaltı": ["Liman", "Hurma", "Sarısu", "Uncalı", "Molla Yusuf", "Gürsu", "Altınkum", "Arapsuyu", "Toros", "Pınarbaşı"],
-        "Kepez": ["Varsak", "Dokuma", "Gülveren", "Ahatlı", "Kültür", "Sütçüler", "Teomanpaşa", "Kuzeyyaka", "Düdenbaşı", "Göksu"],
-        "Alanya": ["Merkez", "Mahmutlar", "Oba", "Kestel", "Avsallar", "Kargıcak", "Tosmur"],
-        "Döşemealtı": ["Yeniköy", "Yeşilbayır", "Altınkale", "Bahçeyaka", "Düzlerçamı"],
-        "Aksu": ["Altıntaş", "Çalkaya", "Güzelyurt", "Mandırlar"]
+        "Akseki": ["Merkez", "Bademli", "Cevizli", "Güçlüköy", "Kuyucak", "Süleymaniye", "Yarpuz"],
+        "Aksu": ["Altıntaş", "Atatürk", "Barbaros", "Boztepe", "Cihadiye", "Çalkaya", "Çamköy", "Dumanlar", "Fatih", "Gökdere", "Güloluk", "Güzelyurt", "Hacıaliler", "Karaçallı", "Kemerağzı", "Konak", "Kundu", "Macun", "Mandırlar", "Murtuna", "Pınarlı", "Soğucaksu", "Solak", "Yurtpınar"],
+        "Alanya": ["Merkez", "Avsallar", "Cikcilli", "Çıplaklı", "Demirtaş", "Güller Pınarı", "Hacet", "İncekum", "Kargıcak", "Kestel", "Konaklı", "Küçükhasbahçe", "Mahmutlar", "Oba", "Okurcalar", "Payallar", "Saray", "Şekerhane", "Tosmur", "Türkler", "Yaylalı"],
+        "Demre": ["Merkez", "Beymelek", "Karabucak", "Kekova", "Yavu"],
+        "Döşemealtı": ["Altınkale", "Ayanlar", "Aydınlar", "Bahçeyaka", "Bıyıklı", "Camili", "Çığlık", "Çıplaklı", "Dağbeli", "Düzlerçamı", "Ekşili", "Ilıca", "Karaman", "Karataş", "Kovanlık", "Kömürcüler", "Nebiler", "Tomalar", "Yalınlı", "Yeniköy", "Yeşilbayır"],
+        "Elmalı": ["Merkez", "Karyağdı", "Gündoğan", "İplik Pazarı", "Toklular"],
+        "Finike": ["Merkez", "Eski", "Hasyurt", "İskele", "Kale", "Karşıyaka", "Kum", "Sahilkent", "Turunçova", "Yeni", "Yeşilyurt"],
+        "Gazipaşa": ["Merkez", "Pazarcı", "Gazi", "İstiklal", "Cumhuriyet", "Koru", "Bakılar", "Ekmel"],
+        "Gündoğmuş": ["Merkez", "Fatih", "Rasih Kaplan"],
+        "İbradı": ["Merkez", "Aşağı", "Yukarı", "Ormana"],
+        "Kaş": ["Merkez", "Andifli", "Gömbe", "Kalkan", "Kınık", "Ova", "Yeşilköy", "Gelemiş", "İslamlar", "Patara"],
+        "Kemer": ["Merkez", "Arslanbucak", "Beldibi", "Beycik", "Çamyuva", "Göynük", "Kiriş", "Kuzdere", "Tekirova", "Ulupınar", "Yeni"],
+        "Kepez": ["Ahatlı", "Altınova", "Atatürk", "Avni Tolunay", "Ayanoğlu", "Baraj", "Barış", "Başköy", "Beşkonak", "Çamlıbel", "Çankaya", "Demirel", "Duacı", "Duraliler", "Düdenbaşı", "Emek", "Erenköy", "Esentepe", "Fabrikalar", "Fatih", "Fevzi Çakmak", "Gazi", "Göksu", "Gülveren", "Gündoğdu", "Güneş", "Habibler", "Hüsnü Karakaş", "Kanal", "Karşıyaka", "Kazım Karabekir", "Kepez", "Kuzeyyaka", "Kültür", "Mehmet Akif", "Menderes", "Özgürlük", "Santral", "Sütçüler", "Şafak", "Teomanpaşa", "Ulus", "Ünsal", "Varsak", "Yavuz Selim", "Yeni", "Yeni Doğan", "Yeşiltepe", "Yeşilyurt", "Yükseliş", "Zafer", "Zeytinlik"],
+        "Konyaaltı": ["Akdamlar", "Akkuyu", "Altınkum", "Arapsuyu", "Aşağıkaraman", "Bahtılı", "Çağlarca", "Çakırlar", "Doyran", "Geyikbayırı", "Gökçam", "Gürsu", "Hacısekililer", "Hisarçandır", "Hurma", "Karatepe", "Kır", "Kuşkavağı", "Liman", "Molla Yusuf", "Öğretmenevleri", "Pınarbaşı", "Sarısu", "Siteler", "Toros", "Uluç", "Uncalı", "Yarbaşçandır", "Zümrüt"],
+        "Korkuteli": ["Merkez", "Alaaddin", "Aşağıpazar", "Kiremitli", "Uzunoluk", "Yeni", "Datköy"],
+        "Kumluca": ["Merkez", "Bağlık", "Beykonak", "Cumhuriyet", "Eskicami", "Göksu", "Karşıyaka", "Kasapçayırı", "Mavikent", "Meydan", "Narenciye", "Sarıcasu", "Temel Eğitim", "Yeni"],
+        "Manavgat": ["Merkez", "Aşağı Pazarcı", "Aşağı Hisar", "Bahçelievler", "Çağlayan", "Çolaklı", "Emek", "Eski Hisar", "Evrenseki", "Gündoğdu", "Ilıca", "Kasaplar", "Kavaklı", "Kızılağaç", "Kızılot", "Milli Egemenlik", "Mimarsinan", "Örnek", "Salkım Evler", "Sarılar", "Side", "Sorgun", "Şelale", "Taşağıl", "Ulukapı", "Yukarı Hisar", "Yukarı Pazarcı"],
+        "Muratpaşa": ["Altındağ", "Bahçelievler", "Balbey", "Barbaros", "Bayındır", "Cumhuriyet", "Çağlayan", "Çaybaşı", "Demircikara", "Deniz", "Doğuyaka", "Dutlubahçe", "Elmalı", "Ermenek", "Etiler", "Fener", "Gebizli", "Gençlik", "Güvenlik", "Güzelbağ", "Güzeloba", "Güzeloluk", "Haşimişcan", "Kışla", "Kırcami", "Kızıltoprak", "Kızılsaray", "Konuksever", "Mehmetçik", "Meltem", "Memurevleri", "Meydankavağı", "Muratpaşa", "Sedir", "Selçuk", "Sinan", "Soğuksu", "Şirinyalı", "Tahılpazarı", "Tarım", "Topçular", "Tuzcular", "Üçgen", "Varlık", "Yenigün", "Yeşilbahçe", "Yeşildere", "Yeşilova", "Yıldız", "Yüksekalan", "Zerdalilik", "Zümrütova"],
+        "Serik": ["Merkez", "Akçaalan", "Belek", "Belkıs", "Boğazkent", "Cumalı", "Çandır", "Gedik", "Kadriye", "Karadayı", "Kökez", "Kürüş", "Merkez", "Orta", "Yeni", "Yukarı Kocayatak"]
     };
-    const floorList = ["Seçiniz...", "Giriş Altı Kot 4", "Giriş Altı Kot 3", "Giriş Altı Kot 2", "Giriş Altı Kot 1", "Bodrum", "Zemin", "Bahçe Katı", "Giriş", "Yüksek Giriş", "Müstakil", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "20+", "30+"];
-    const roomList = ["Seçiniz...", "Stüdyo (1+0)", "1+1", "1.5+1", "2+0", "2+1", "2.5+1", "3+1", "3.5+1", "4+1", "4+2", "5+1", "5+2", "Villa", "Komple Bina"];
 
-    let portfolio = JSON.parse(localStorage.getItem('KaracabayRE_EST_DB')) || [];
+    const floorList = ["Seçiniz...", "Giriş Altı Kot 4", "Giriş Altı Kot 3", "Giriş Altı Kot 2", "Giriş Altı Kot 1", "Bodrum", "Zemin", "Bahçe Katı", "Giriş", "Yüksek Giriş", "Müstakil", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30 ve üzeri"];
+    const roomList = ["Seçiniz...", "Stüdyo (1+0)", "1+1", "1.5+1", "2+0", "2+1", "2.5+1", "3+0", "3+1", "3.5+1", "4+0", "4+1", "4+2", "4+3", "4+4", "5+1", "5.5+1", "5+2", "6+1", "6+2", "7+1", "Villa", "Komple Bina"];
+
+    let portfolio = JSON.parse(localStorage.getItem('KaracabayRE_EST_DB_v4')) || [];
     let editingId = null;
 
     window.onload = function() { populateSelects(); renderTable(); };
@@ -241,11 +262,11 @@
             type: document.getElementById('inpType').value,
             status: document.getElementById('inpStatus').value,
             district: document.getElementById('inpDistrict').value,
-            neighborhood: document.getElementById('inpNeighborhood').value,
+            neighborhood: document.getElementById('inpNeighborhood').value, // Manuel veya listeden gelen
             rooms: document.getElementById('inpRooms').value,
             floor: document.getElementById('inpFloor').value,
-            gross: document.getElementById('inpGross').value, // YENİ
-            net: document.getElementById('inpNet').value, // YENİ
+            gross: document.getElementById('inpGross').value,
+            net: document.getElementById('inpNet').value,
             price: document.getElementById('inpPrice').value,
             authStart: document.getElementById('inpAuthStart').value,
             authEnd: document.getElementById('inpAuthEnd').value,
@@ -279,12 +300,15 @@
         document.getElementById('inpType').value = item.type;
         document.getElementById('inpStatus').value = item.status;
         document.getElementById('inpDistrict').value = item.district;
-        loadMahalleler('inpDistrict', 'inpNeighborhood');
+        
+        // Mahalle listesini yükle ve değeri ata
+        loadMahalleler('inpDistrict', 'neighborhoods');
         setTimeout(() => { document.getElementById('inpNeighborhood').value = item.neighborhood; }, 50);
+        
         document.getElementById('inpRooms').value = item.rooms;
         document.getElementById('inpFloor').value = item.floor;
-        document.getElementById('inpGross').value = item.gross || ''; // YENİ
-        document.getElementById('inpNet').value = item.net || ''; // YENİ
+        document.getElementById('inpGross').value = item.gross || '';
+        document.getElementById('inpNet').value = item.net || '';
         document.getElementById('inpPrice').value = item.price;
         document.getElementById('inpAuthStart').value = item.authStart;
         document.getElementById('inpAuthEnd').value = item.authEnd;
@@ -314,7 +338,7 @@
         document.getElementById('inpStatus').value = "Satılık";
     }
 
-    function saveToDisk() { localStorage.setItem('KaracabayRE_EST_DB', JSON.stringify(portfolio)); }
+    function saveToDisk() { localStorage.setItem('KaracabayRE_EST_DB_v4', JSON.stringify(portfolio)); }
 
     function downloadData() {
         const content = JSON.stringify(portfolio, null, 4);
@@ -348,7 +372,7 @@
         const fStatus = document.getElementById('filterStatus').value;
         const fRoom = document.getElementById('filterRooms').value; 
         const fDist = document.getElementById('filterDistrict').value;
-        const fNeigh = document.getElementById('filterNeighborhood').value;
+        const fNeigh = document.getElementById('filterNeighborhood').value.toLowerCase(); // Text search
         const minP = parsePrice(document.getElementById('filterMinPrice').value);
         const maxP = parsePrice(document.getElementById('filterMaxPrice').value);
 
@@ -360,7 +384,7 @@
                    ((fRoom === 'all') || (item.rooms === fRoom)) &&
                    ((fStatus === 'all') || (item.status === fStatus)) &&
                    (fDist === 'all' || item.district === fDist) &&
-                   (fNeigh === 'all' || item.neighborhood === fNeigh) &&
+                   (fNeigh === '' || item.neighborhood.toLowerCase().includes(fNeigh)) &&
                    (minP === 0 || p >= minP) && (maxP === 0 || p <= maxP);
         });
 
@@ -386,8 +410,6 @@
 
             let btnLink = item.link ? `<button onclick="alert('Link:\\n${item.link}')" class="btn-icon no-print" style="background:#95a5a6; border:none; color:white; border-radius:3px; cursor:pointer; width:100%;">📂</button>` : '-';
             let btnDesc = item.desc ? `<button onclick="document.getElementById('modalText').innerText='${item.desc.replace(/\n/g,'\\n').replace(/'/g, "\\'")}'; document.getElementById('descModal').style.display='block';" class="btn-icon no-print" style="background:#9b59b6; border:none; color:white; border-radius:3px; cursor:pointer; width:100%;">📝</button>` : '-';
-            
-            // m2 Değerleri
             let m2Display = (item.gross || '-') + ' / ' + (item.net || '-') + ' m²';
 
             tbody.innerHTML += `
@@ -396,7 +418,6 @@
                     <td><b>${item.district}</b><br><small>${item.neighborhood}</small></td>
                     <td>${item.rooms || ''}<br><small>${item.floor || ''}</small></td>
                     <td style="font-size:12px; font-weight:600; color:#555;">${m2Display}</td>
-                    
                     <td style="color:#27ae60; font-weight:bold;">${item.price} ₺</td>
                     <td>${item.ref}<br><small style="font-family:monospace; font-weight:bold;">${item.phone || ''}</small></td>
                     <td>${authHtml}</td>
@@ -411,24 +432,39 @@
 
     function populateSelects() {
         const dS = document.getElementById('inpDistrict'); const fS = document.getElementById('filterDistrict');
-        Object.keys(antalyaData).forEach(d => { dS.innerHTML += `<option>${d}</option>`; fS.innerHTML += `<option>${d}</option>`; });
+        // İLÇELERİ SIRALAYALIM
+        const sortedDistricts = Object.keys(antalyaData).sort();
+        sortedDistricts.forEach(d => { dS.innerHTML += `<option>${d}</option>`; fS.innerHTML += `<option>${d}</option>`; });
+        
         const rS = document.getElementById('inpRooms'); const rF = document.getElementById('filterRooms');
         roomList.forEach(r => { rS.innerHTML += `<option>${r}</option>`; rF.innerHTML += `<option>${r}</option>`; });
         const flS = document.getElementById('inpFloor'); floorList.forEach(f => flS.innerHTML += `<option>${f}</option>`);
     }
 
-    function loadMahalleler(src, trg) {
-        const val = document.getElementById(src).value; const t = document.getElementById(trg);
-        t.innerHTML = '<option value="">Seçiniz</option>';
-        if(antalyaData[val]) antalyaData[val].forEach(m => t.innerHTML += `<option>${m}</option>`);
+    function loadMahalleler(src, trgId) {
+        const val = document.getElementById(src).value;
+        const dataList = document.getElementById(trgId); // Bu bir DATALIST elementidir
+        
+        // Önce temizle
+        dataList.innerHTML = '';
+        
+        // Eğer ilçe seçiliyse ve veritabanında varsa doldur
+        if(antalyaData[val]) {
+            antalyaData[val].sort().forEach(m => {
+                let opt = document.createElement('option');
+                opt.value = m;
+                dataList.appendChild(opt);
+            });
+        }
+        // Filtre tarafında tabloyu yenile (sadece filtre işleminde)
         if(src === 'filterDistrict') {
-             const ft = document.getElementById('filterNeighborhood'); ft.innerHTML = '<option value="all">Tümü</option>';
-             if(antalyaData[val]) antalyaData[val].forEach(m => ft.innerHTML += `<option>${m}</option>`);
+             // Filtre kısmında mahalle text inputunu sıfırla
+             document.getElementById('filterNeighborhood').value = '';
              renderTable();
         }
     }
     
-    function handleFilterDistrictChange() { loadMahalleler('filterDistrict', 'filterNeighborhood'); }
+    function handleFilterDistrictChange() { loadMahalleler('filterDistrict', 'filterNeighborhoodList'); }
     function parsePrice(v) { return v ? parseInt(v.toString().replace(/\./g,'')) : 0; }
 </script>
 
