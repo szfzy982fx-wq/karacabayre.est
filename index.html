@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KARACABAYRE.EST Emlak Asistanı (v13)</title>
+    <title>KARACABAYRE.EST Emlak Asistanı (v14)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -13,6 +13,8 @@
             --danger: #c0392b;
             --sold: #d63031;
             --tool-bg: #f8f9fa;
+            --warning-bg: #fff3cd; /* Sarı uyarı */
+            --alert-bg: #f8d7da;   /* Kırmızı alarm */
         }
         body { font-family: 'Segoe UI', sans-serif; background: #eef2f3; margin: 0; padding: 20px; color: #333; }
         .container { max-width: 1800px; margin: 0 auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
@@ -23,42 +25,15 @@
         .btn-backup { background: #f39c12; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; display: flex; align-items: center; gap: 5px; }
         .btn-upload { background: #16a085; }
 
-        /* --- TOOLBAR (ARAÇ ÇUBUĞU) --- */
-        .tools-bar {
-            display: flex;
-            gap: 10px;
-            background: var(--tool-bg);
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 25px;
-            border: 1px solid #ddd;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .tool-btn {
-            background: white;
-            border: 1px solid #ccc;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
-            text-decoration: none; /* Linkler için */
-        }
+        /* Toolbar */
+        .tools-bar { display: flex; gap: 10px; background: var(--tool-bg); padding: 10px; border-radius: 6px; margin-bottom: 25px; border: 1px solid #ddd; flex-wrap: wrap; align-items: center; }
+        .tool-btn { background: white; border: 1px solid #ccc; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--primary); display: flex; align-items: center; gap: 8px; transition: all 0.2s; text-decoration: none; }
         .tool-btn:hover { background: var(--secondary); color: white; border-color: var(--secondary); }
-        .tool-btn i { font-size: 16px; }
-        .tkgm-btn { background: #e8f6f3; color: #16a085; border-color: #16a085; }
-        .tkgm-btn:hover { background: #16a085; color: white; }
-        /* DAKV Butonu Özel */
-        .dakv-btn { background: #fef9e7; color: #d35400; border-color: #f39c12; }
-        .dakv-btn:hover { background: #d35400; color: white; }
+        .tkgm-btn { background: #e8f6f3; color: #16a085; border-color: #16a085; } .tkgm-btn:hover { background: #16a085; color: white; }
+        .dakv-btn { background: #fef9e7; color: #d35400; border-color: #f39c12; } .dakv-btn:hover { background: #d35400; color: white; }
+        .crm-btn { background: #ebf5fb; color: #2980b9; border-color: #2980b9; } .crm-btn:hover { background: #2980b9; color: white; }
 
-        /* Form */
+        /* Form & Inputs */
         .input-panel { background: #fdfdfd; padding: 20px; border: 1px solid #ddd; border-left: 6px solid var(--primary); margin-bottom: 30px; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 15px; }
         .form-group label { display: block; font-size: 11px; font-weight: 700; margin-bottom: 5px; color: #555; text-transform: uppercase; }
@@ -71,44 +46,49 @@
         .btn-delete-rec { background: var(--danger); color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; font-weight: bold; flex: 1; display: none; }
         .btn-cancel { background: #7f8c8d; color: white; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; display: none; }
 
-        /* Tablo */
+        /* Main Table */
         table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; table-layout: fixed; }
         th { background: #34495e; color: white; padding: 12px; text-align: left; vertical-align: middle; }
         td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: middle; word-wrap: break-word; }
         tr:hover { background: #f9f9f9; }
         .badge { padding: 4px 8px; border-radius: 4px; color: white; font-size: 11px; font-weight: bold; display:inline-block; }
         .satilik { background: var(--secondary); } .kiralik { background: #e67e22; } .kirmizi-etiket { background: var(--sold) !important; }
-
-        /* Link Stilleri */
         .direct-link-btn { display: inline-block; background-color: #3498db; color: white; text-decoration: none; padding: 4px 8px; border-radius: 3px; font-size: 11px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; font-weight: 600; }
-        .direct-link-btn:hover { opacity: 0.9; }
         .link-sahibinden { background-color: #f1c40f; color: black; } .link-hepsi { background-color: #e74c3c; } .link-obudur { background-color: #8e44ad; } .link-emlakjet { background-color: #2ecc71; } .link-dosya { background-color: #95a5a6; border: 1px solid #7f8c8d; } .link-sosyal { background-color: #d63031; }
 
-        /* Filtre */
+        /* Filter */
         .filter-bar { background: var(--primary); padding: 15px; border-radius: 6px; display: flex; gap: 10px; flex-wrap: wrap; color: white; align-items: center; }
         .filter-bar input, .filter-bar select { padding: 8px; border: none; border-radius: 4px; color: #333; }
 
         /* Modal Generic */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; }
-        .modal-content { background: white; margin: 5% auto; padding: 25px; width: 60%; border-radius: 8px; position: relative; max-height: 80vh; display: flex; flex-direction: column; }
+        .modal-content { background: white; margin: 3% auto; padding: 25px; width: 80%; border-radius: 8px; position: relative; max-height: 90vh; display: flex; flex-direction: column; }
         .modal-body { overflow-y: auto; margin-top: 15px; padding-right: 10px; }
-
-        /* --- ARAÇ MODALLARI STİLLERİ --- */
         .tool-modal-content { width: 450px; margin: 10% auto; }
+
+        /* --- CRM STYLES --- */
+        .crm-header { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .crm-tab { padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 6px; border: 1px solid #eee; background: #f9f9f9; }
+        .crm-tab.active { background: var(--secondary); color: white; border-color: var(--secondary); }
+        .crm-input-row { display: flex; gap: 10px; margin-bottom: 15px; background: #f1f2f6; padding: 15px; border-radius: 6px; align-items: flex-end; }
+        .crm-input-row .form-group { flex: 1; margin-bottom: 0; }
         
-        /* Hesap Makinesi */
+        .crm-table { width: 100%; font-size: 13px; }
+        .crm-table th { background: #7f8c8d; }
+        
+        /* Alarm Durumları */
+        .row-alert { background-color: var(--alert-bg) !important; color: #721c24; }
+        .row-warning { background-color: var(--warning-bg) !important; color: #856404; }
+        .crm-status-badge { padding: 3px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; }
+
+        /* Calculator & Currency */
         .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .calc-btn { padding: 15px; font-size: 18px; cursor: pointer; background: #eee; border: none; border-radius: 4px; }
-        .calc-btn:hover { background: #ddd; }
-        .calc-btn.op { background: var(--secondary); color: white; }
-        .calc-btn.eq { background: var(--accent); color: white; grid-column: span 2; }
+        .calc-btn { padding: 15px; font-size: 18px; cursor: pointer; background: #eee; border: none; border-radius: 4px; } .calc-btn:hover { background: #ddd; }
+        .calc-btn.op { background: var(--secondary); color: white; } .calc-btn.eq { background: var(--accent); color: white; grid-column: span 2; }
         .calc-screen { width: 100%; padding: 10px; font-size: 24px; text-align: right; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
-        
-        /* Döviz Ekranı */
         .currency-board { display: flex; flex-direction: column; gap: 15px; }
         .currency-row { display: flex; align-items: center; justify-content: space-between; background: #f9f9f9; padding: 10px; border-radius: 6px; border: 1px solid #eee; }
-        .curr-flag { font-size: 24px; margin-right: 10px; }
-        .curr-name { font-weight: bold; font-size: 16px; color: #555; flex: 1; }
+        .curr-flag { font-size: 24px; margin-right: 10px; } .curr-name { font-weight: bold; font-size: 16px; color: #555; flex: 1; }
         .curr-input { width: 100px; padding: 8px; font-weight: bold; text-align: right; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; color: #333; }
         .curr-label { font-size: 10px; color: #777; margin-bottom: 2px; text-align: right; }
         .currency-result { background: #eafaf1; border: 1px solid #27ae60; padding: 15px; text-align: center; border-radius: 6px; margin-top: 10px; }
@@ -120,7 +100,6 @@
         .tab-content.active { display: block; }
         .result-box { margin-top: 15px; padding: 10px; background: #f0f9ff; border: 1px solid #bce8f1; color: #31708f; font-weight: bold; border-radius: 4px; text-align: center; font-size: 1.1em; }
 
-        /* Print */
         .print-only { display: none; }
         @media print { 
             .input-panel, .filter-bar, .backup-controls, .tools-bar { display: none !important; } 
@@ -130,9 +109,6 @@
             .container { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
             table { width: 100%; font-size: 10px; }
             th, td { border: 1px solid #ddd; padding: 4px; color: black; }
-            th { background-color: #eee !important; color: black !important; font-weight: bold; }
-            th:nth-child(1) { width: 8%; } th:nth-child(2) { width: 13%; } th:nth-child(3) { width: 8%; } th:nth-child(4) { width: 10%; }
-            th:nth-child(5) { width: 9%; } th:nth-child(6) { width: 14%; } th:nth-child(7) { width: 9%; } th.print-only { width: 29%; }
         }
     </style>
 </head>
@@ -151,12 +127,11 @@
     </header>
 
     <div class="tools-bar">
+        <button class="tool-btn crm-btn" onclick="openCRM()"><i class="fa-solid fa-users"></i> Müşteri İlişkileri (CRM)</button>
         <button class="tool-btn" onclick="openModal('calcModal')"><i class="fa-solid fa-calculator"></i> Hesap Makinesi</button>
-        <button class="tool-btn" onclick="openModal('currencyModal'); fetchCurrency();"><i class="fa-solid fa-money-bill-transfer"></i> Döviz Çevirici (TCMB)</button>
+        <button class="tool-btn" onclick="openModal('currencyModal'); fetchCurrency();"><i class="fa-solid fa-money-bill-transfer"></i> Döviz Çevirici</button>
         <button class="tool-btn" onclick="openModal('realEstateCalcModal')"><i class="fa-solid fa-file-contract"></i> Hesaplamalar</button>
-        
-        <a href="https://www.hesapkurdu.com/konut-kredisi/h/gayrimenkul-deger-artis-kazanci-vergisi-hesaplama?keyword=&adtextid=&utm_source=google&utm_medium=cpc&utm_campaign=performance_max_-_conversion&utm_adgroup=&utm_content=x&gad_source=1&gad_campaignid=21683109554&gbraid=0AAAAADpnQnaJFwTsM3iG0oiKQ9AidH4Za&gclid=Cj0KCQiApfjKBhC0ARIsAMiR_IvemuDEVo2Ybna0usezvpRJIHc155FOiM8azbY0q24HMJ1N-AqAmwEaApxoEALw_wcB" target="_blank" class="tool-btn dakv-btn"><i class="fa-solid fa-calculator"></i> DAKV Hesapla</a>
-        
+        <a href="https://www.hesapkurdu.com/konut-kredisi/h/gayrimenkul-deger-artis-kazanci-vergisi-hesaplama" target="_blank" class="tool-btn dakv-btn"><i class="fa-solid fa-calculator"></i> DAKV Hesapla</a>
         <a href="https://parselsorgu.tkgm.gov.tr/" target="_blank" class="tool-btn tkgm-btn"><i class="fa-solid fa-map-location-dot"></i> TKGM Parsel Sorgu</a>
     </div>
 
@@ -192,425 +167,282 @@
     </div>
 
     <div class="filter-bar">
-        <span>🔍 ARA:</span>
-        <input type="text" id="searchBox" placeholder="İsim, Tel, Not..." onkeyup="renderTable()" style="width:140px;">
+        <span>🔍 ARA:</span> <input type="text" id="searchBox" placeholder="İsim, Tel, Not..." onkeyup="renderTable()" style="width:140px;">
         <select id="filterStatus" onchange="renderTable()" style="width:110px;"><option value="all">Tüm Durumlar</option><option>Satılık</option><option>Kiralık</option><option>Devren</option><option style="color:red;">Satıldı</option><option style="color:red;">Kiralandı</option></select>
         <select id="filterRooms" onchange="renderTable()" style="width:120px;"><option value="all">Tüm Odalar</option></select>
         <select id="filterDistrict" onchange="loadMahalleler('filterDistrict', 'dl_mahalle_filtre')"><option value="all">Tüm İlçeler</option></select>
         <input type="text" list="dl_mahalle_filtre" id="filterNeighborhood" placeholder="Mahalle Ara..." onkeyup="renderTable()" style="width:120px;" autocomplete="off"><datalist id="dl_mahalle_filtre"></datalist>
-        <input type="number" id="filterMinPrice" placeholder="Min TL" onkeyup="renderTable()" style="width:80px;">
-        <input type="number" id="filterMaxPrice" placeholder="Max TL" onkeyup="renderTable()" style="width:80px;">
+        <input type="number" id="filterMinPrice" placeholder="Min TL" onkeyup="renderTable()" style="width:80px;"> <input type="number" id="filterMaxPrice" placeholder="Max TL" onkeyup="renderTable()" style="width:80px;">
         <button onclick="window.print()" style="margin-left:auto; background:#8e44ad; border:none; color:white; padding:8px 15px; border-radius:4px; cursor:pointer;">🖨️ YAZDIR</button>
     </div>
-
-    <table id="portfolioTable">
-        <thead>
-            <tr>
-                <th width="8%">Cins/Tür</th> <th width="12%">Lokasyon</th> <th width="8%">Özellikler</th> <th width="10%">m² (Brüt/Net)</th> 
-                <th width="9%">Fiyat</th> <th width="14%">Müşteri / Tel</th> <th width="9%">Yetki</th>
-                <th class="no-print" width="6%" style="text-align:center;">Linkler</th> <th class="no-print" width="5%" style="text-align:center;">Not</th> <th class="no-print" width="8%">İşlem</th>
-                <th class="print-only">Açıklama / Notlar</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-    </table>
+    <table id="portfolioTable"><thead><tr><th width="8%">Cins/Tür</th><th width="12%">Lokasyon</th><th width="8%">Özellikler</th><th width="10%">m² (Brüt/Net)</th><th width="9%">Fiyat</th><th width="14%">Müşteri / Tel</th><th width="9%">Yetki</th><th class="no-print" width="6%" style="text-align:center;">Linkler</th><th class="no-print" width="5%" style="text-align:center;">Not</th><th class="no-print" width="8%">İşlem</th><th class="print-only">Açıklama / Notlar</th></tr></thead><tbody id="tableBody"></tbody></table>
 </div>
 
-<div id="descModal" class="modal" onclick="closeModalOutside(event, 'descModal')"><div class="modal-content"><div style="display:flex;justify-content:space-between;"><h3>📝 Detaylı Notlar</h3><span onclick="closeModal('descModal')" style="cursor:pointer;font-size:24px;">&times;</span></div><div class="modal-body"><p id="modalText" style="white-space: pre-wrap; margin:0; line-height: 1.6;"></p></div></div></div>
-
-<div id="calcModal" class="modal" onclick="closeModalOutside(event, 'calcModal')">
-    <div class="modal-content tool-modal-content">
-        <div style="display:flex;justify-content:space-between; margin-bottom:10px;"><h3>🧮 Hesap Makinesi</h3><span onclick="closeModal('calcModal')" style="cursor:pointer;font-size:24px;">&times;</span></div>
-        <input type="text" id="calcDisplay" class="calc-screen" readonly>
-        <div class="calc-grid">
-            <button class="calc-btn" onclick="calcInput('7')">7</button><button class="calc-btn" onclick="calcInput('8')">8</button><button class="calc-btn" onclick="calcInput('9')">9</button><button class="calc-btn op" onclick="calcInput('/')">÷</button>
-            <button class="calc-btn" onclick="calcInput('4')">4</button><button class="calc-btn" onclick="calcInput('5')">5</button><button class="calc-btn" onclick="calcInput('6')">6</button><button class="calc-btn op" onclick="calcInput('*')">×</button>
-            <button class="calc-btn" onclick="calcInput('1')">1</button><button class="calc-btn" onclick="calcInput('2')">2</button><button class="calc-btn" onclick="calcInput('3')">3</button><button class="calc-btn op" onclick="calcInput('-')">-</button>
-            <button class="calc-btn" onclick="calcInput('0')">0</button><button class="calc-btn" onclick="calcInput('.')">.</button><button class="calc-btn" onclick="calcClear()">C</button><button class="calc-btn op" onclick="calcInput('+')">+</button>
-            <button class="calc-btn eq" onclick="calcResult()">=</button>
-        </div>
-    </div>
-</div>
-
-<div id="currencyModal" class="modal" onclick="closeModalOutside(event, 'currencyModal')">
-    <div class="modal-content tool-modal-content">
-        <div style="display:flex;justify-content:space-between; margin-bottom:15px;">
-            <h3>💱 Döviz (Efektif Satış)</h3>
-            <span onclick="closeModal('currencyModal')" style="cursor:pointer;font-size:24px;">&times;</span>
-        </div>
+<div id="crmModal" class="modal" onclick="closeModalOutside(event, 'crmModal')">
+    <div class="modal-content" style="width:90%; height:95%;">
+        <div style="display:flex;justify-content:space-between; margin-bottom:10px;"><h3>👥 Müşteri İlişkileri (CRM)</h3><span onclick="closeModal('crmModal')" style="cursor:pointer;font-size:24px;">&times;</span></div>
         
-        <div style="margin-bottom:15px;">
-            <a href="https://www.tcmb.gov.tr/wps/wcm/connect/tr/tcmb+tr/main+page+site+area/bugun" target="_blank" class="tool-btn tkgm-btn" style="width:100%; justify-content:center; text-align:center;">
-                <i class="fa-solid fa-building-columns"></i> TCMB Kurlarını Aç (Kontrol Et)
-            </a>
-            <div style="font-size:11px; color:#666; margin-top:5px; text-align:center;">*Otomatik değerler piyasa verisidir. Kesin işlem için TCMB sayfasındaki "Efektif Satış" sütununa bakıp kutucuğu güncelleyiniz.</div>
+        <div class="crm-header">
+            <div id="tab1" class="crm-tab active" onclick="switchCRMTab('investors')">💰 Talep Havuzu (Yatırımcılar)</div>
+            <div id="tab2" class="crm-tab" onclick="switchCRMTab('network')">📢 Etki Çevresi (Network)</div>
         </div>
 
-        <div class="currency-board">
-            <div class="currency-row">
-                <span class="curr-flag">🇺🇸</span>
-                <span class="curr-name">USD / TRY</span>
-                <div>
-                    <div class="curr-label">Efektif Satış</div>
-                    <input type="number" id="usdRate" class="curr-input" placeholder="36.00">
-                </div>
+        <div id="crmInvestors" class="crm-section" style="display:block;">
+            <div class="crm-input-row">
+                <div class="form-group"><label>Ad Soyad</label><input type="text" id="invName"></div>
+                <div class="form-group"><label>Şehir</label><input type="text" id="invCity" value="Antalya"></div>
+                <div class="form-group"><label>Telefon</label><input type="text" id="invPhone" oninput="formatPhone(this)"></div>
+                <div class="form-group" style="flex:2;"><label>Talep (Ne Arıyor?)</label><input type="text" id="invRequest" placeholder="Örn: 3+1 Daire, Max 5M TL"></div>
+                <button class="btn-save" style="flex:0.5; height:38px;" onclick="addInvestor()">EKLE</button>
             </div>
-
-            <div class="currency-row">
-                <span class="curr-flag">🇪🇺</span>
-                <span class="curr-name">EUR / TRY</span>
-                <div>
-                    <div class="curr-label">Efektif Satış</div>
-                    <input type="number" id="eurRate" class="curr-input" placeholder="38.00">
-                </div>
-            </div>
+            <table class="crm-table">
+                <thead><tr><th>Ad Soyad</th><th>Şehir</th><th>Telefon</th><th>Talep Detayı</th><th width="50">Sil</th></tr></thead>
+                <tbody id="investorTableBody"></tbody>
+            </table>
         </div>
 
-        <hr style="margin:15px 0; border:0; border-top:1px solid #eee;">
-
-        <div class="form-group">
-            <label>Çevrilecek Tutar (Döviz)</label>
-            <div style="display:flex; gap:10px;">
-                <input type="number" id="calcCurrAmount" placeholder="Örn: 1000" style="flex:2;">
-                <select id="calcCurrType" style="flex:1;">
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                </select>
+        <div id="crmNetwork" class="crm-section" style="display:none;">
+            <div style="background:#eafaf1; padding:10px; margin-bottom:15px; border-radius:4px; border:1px solid #27ae60; color:#27ae60; font-size:13px;">
+                ℹ️ <b>Nasıl Çalışır?</b> Buraya eklediğiniz kişiler için sistem otomatik sayaç başlatır. <b>45 gün</b> boyunca aramazsanız satır <b>KIRMIZI</b> olur.
             </div>
-        </div>
-
-        <button class="btn-save" style="width:100%; margin-top:10px;" onclick="calculateCurrencyTotal()">HESAPLA (TL)</button>
-        <div id="currencyTotalRes" class="currency-result" style="display:none;">
-            <span id="currResText" style="font-size:1.4em; font-weight:bold; color:#2c3e50;">0,00 TL</span>
+            <div class="crm-input-row">
+                <div class="form-group"><label>Ad Soyad</label><input type="text" id="netName"></div>
+                <div class="form-group"><label>Şehir</label><input type="text" id="netCity" value="Antalya"></div>
+                <div class="form-group"><label>Telefon</label><input type="text" id="netPhone" oninput="formatPhone(this)"></div>
+                <div class="form-group" style="flex:2;"><label>Arz Türü / Potansiyel</label><input type="text" id="netSupply" placeholder="Örn: Site Yöneticisi, Eski Müşteri"></div>
+                <div class="form-group"><label>Son Arama</label><input type="date" id="netLastCall"></div>
+                <button class="btn-save" style="flex:0.5; height:38px;" onclick="addNetwork()">EKLE</button>
+            </div>
+            <table class="crm-table">
+                <thead><tr><th>Durum</th><th>Ad Soyad</th><th>Şehir</th><th>Telefon</th><th>Arz / Potansiyel</th><th>Son Arama</th><th width="120">İşlem</th><th width="50">Sil</th></tr></thead>
+                <tbody id="networkTableBody"></tbody>
+            </table>
         </div>
     </div>
 </div>
 
-<div id="realEstateCalcModal" class="modal" onclick="closeModalOutside(event, 'realEstateCalcModal')">
-    <div class="modal-content" style="width:500px;">
-        <div style="display:flex;justify-content:space-between; margin-bottom:10px;"><h3>🧾 Emlak Hesaplamaları</h3><span onclick="closeModal('realEstateCalcModal')" style="cursor:pointer;font-size:24px;">&times;</span></div>
-        
-        <div class="tab-buttons">
-            <button class="tab-btn active" onclick="switchTab('tabTapu')">Tapu & Komisyon</button>
-            <button class="tab-btn" onclick="switchTab('tabEmsal')">Emsal</button>
-            <button class="tab-btn" onclick="switchTab('tabVergi')">Emlak Vergisi</button>
-        </div>
-
-        <div id="tabTapu" class="tab-content active">
-            <div class="form-group"><label>Satış Bedeli (TL)</label><input type="number" id="calcPrice" placeholder="Örn: 5000000"></div>
-            <button class="btn-save" style="width:100%; margin-top:10px;" onclick="calcTapuKomisyon()">HESAPLA</button>
-            <div id="resTapu" class="result-box" style="display:none; text-align:left; font-size:13px;"></div>
-        </div>
-
-        <div id="tabEmsal" class="tab-content">
-            <div class="form-group"><label>Arsa Alanı (m²)</label><input type="number" id="calcArsaM2"></div>
-            <div class="form-group"><label>KAKS / Emsal Oranı</label><input type="number" id="calcKaks" placeholder="Örn: 1.5"></div>
-            <button class="btn-save" style="width:100%; margin-top:10px;" onclick="calcEmsal()">HESAPLA</button>
-            <div id="resEmsal" class="result-box" style="display:none;"></div>
-        </div>
-
-        <div id="tabVergi" class="tab-content">
-            <div class="form-group"><label>Emlak Vergisi Hesapla</label></div>
-            <div style="display:flex; gap:10px;">
-                <select id="calcVergiType" style="flex:1;"><option value="0.002">Konut (B.Şehir - %0.2)</option><option value="0.001">Konut (Normal - %0.1)</option><option value="0.004">İşyeri (B.Şehir - %0.4)</option><option value="0.002">İşyeri (Normal - %0.2)</option><option value="0.006">Arsa (B.Şehir - %0.6)</option></select>
-                <input type="number" id="calcVergiDeger" placeholder="Rayiç Bedel" style="flex:1;">
-            </div>
-            <button class="btn-save" style="width:100%; margin-top:5px;" onclick="calcEmlakVergisi()">VERGİ HESAPLA</button>
-            <div id="resVergi" class="result-box" style="display:none; margin-bottom:15px;"></div>
-        </div>
-    </div>
-</div>
+<div id="descModal" class="modal" onclick="closeModalOutside(event, 'descModal')"><div class="modal-content"><div style="display:flex;justify-content:space-between;"><h3>📝 Notlar</h3><span onclick="closeModal('descModal')" style="cursor:pointer;">&times;</span></div><p id="modalText" style="white-space: pre-wrap; margin-top:10px;"></p></div></div>
+<div id="calcModal" class="modal" onclick="closeModalOutside(event, 'calcModal')"><div class="modal-content tool-modal-content"><div style="display:flex;justify-content:space-between;margin-bottom:10px;"><h3>🧮 Hesap Makinesi</h3><span onclick="closeModal('calcModal')" style="cursor:pointer;font-size:24px;">&times;</span></div><input type="text" id="calcDisplay" class="calc-screen" readonly><div class="calc-grid"><button class="calc-btn" onclick="calcInput('7')">7</button><button class="calc-btn" onclick="calcInput('8')">8</button><button class="calc-btn" onclick="calcInput('9')">9</button><button class="calc-btn op" onclick="calcInput('/')">÷</button><button class="calc-btn" onclick="calcInput('4')">4</button><button class="calc-btn" onclick="calcInput('5')">5</button><button class="calc-btn" onclick="calcInput('6')">6</button><button class="calc-btn op" onclick="calcInput('*')">×</button><button class="calc-btn" onclick="calcInput('1')">1</button><button class="calc-btn" onclick="calcInput('2')">2</button><button class="calc-btn" onclick="calcInput('3')">3</button><button class="calc-btn op" onclick="calcInput('-')">-</button><button class="calc-btn" onclick="calcInput('0')">0</button><button class="calc-btn" onclick="calcInput('.')">.</button><button class="calc-btn" onclick="calcClear()">C</button><button class="calc-btn op" onclick="calcInput('+')">+</button><button class="calc-btn eq" onclick="calcResult()">=</button></div></div></div>
+<div id="currencyModal" class="modal" onclick="closeModalOutside(event, 'currencyModal')"><div class="modal-content tool-modal-content"><div style="display:flex;justify-content:space-between; margin-bottom:15px;"><h3>💱 Döviz (Efektif Satış)</h3><span onclick="closeModal('currencyModal')" style="cursor:pointer;font-size:24px;">&times;</span></div><div style="margin-bottom:15px;"><a href="https://www.tcmb.gov.tr/wps/wcm/connect/tr/tcmb+tr/main+page+site+area/bugun" target="_blank" class="tool-btn tkgm-btn" style="width:100%; justify-content:center; text-align:center;"> TCMB Kurlarını Aç </a><div style="font-size:11px; color:#666; margin-top:5px; text-align:center;">*Otomatik değerler piyasa verisidir. Kesin işlem için TCMB sayfasındaki "Efektif Satış" sütununa bakınız.</div></div><div class="currency-board"><div class="currency-row"><span class="curr-flag">🇺🇸</span><span class="curr-name">USD / TRY</span><div><div class="curr-label">Efektif Satış</div><input type="number" id="usdRate" class="curr-input" placeholder="36.00"></div></div><div class="currency-row"><span class="curr-flag">🇪🇺</span><span class="curr-name">EUR / TRY</span><div><div class="curr-label">Efektif Satış</div><input type="number" id="eurRate" class="curr-input" placeholder="38.00"></div></div></div><hr style="margin:15px 0; border:0; border-top:1px solid #eee;"><div class="form-group"><label>Çevrilecek Tutar</label><div style="display:flex; gap:10px;"><input type="number" id="calcCurrAmount" placeholder="1000" style="flex:2;"><select id="calcCurrType" style="flex:1;"><option value="USD">USD</option><option value="EUR">EUR</option></select></div></div><button class="btn-save" style="width:100%; margin-top:10px;" onclick="calculateCurrencyTotal()">HESAPLA (TL)</button><div id="currencyTotalRes" class="currency-result" style="display:none;"><span id="currResText" style="font-size:1.4em; font-weight:bold; color:#2c3e50;">0,00 TL</span></div></div></div>
+<div id="realEstateCalcModal" class="modal" onclick="closeModalOutside(event, 'realEstateCalcModal')"><div class="modal-content" style="width:500px;"><div style="display:flex;justify-content:space-between; margin-bottom:10px;"><h3>🧾 Emlak Hesaplamaları</h3><span onclick="closeModal('realEstateCalcModal')" style="cursor:pointer;font-size:24px;">&times;</span></div><div class="tab-buttons"><button class="tab-btn active" onclick="switchTab('tabTapu')">Tapu & Komisyon</button><button class="tab-btn" onclick="switchTab('tabEmsal')">Emsal</button><button class="tab-btn" onclick="switchTab('tabVergi')">Emlak Vergisi</button></div><div id="tabTapu" class="tab-content active"><div class="form-group"><label>Satış Bedeli (TL)</label><input type="number" id="calcPrice" placeholder="Örn: 5000000"></div><button class="btn-save" style="width:100%; margin-top:10px;" onclick="calcTapuKomisyon()">HESAPLA</button><div id="resTapu" class="result-box" style="display:none; text-align:left; font-size:13px;"></div></div><div id="tabEmsal" class="tab-content"><div class="form-group"><label>Arsa Alanı (m²)</label><input type="number" id="calcArsaM2"></div><div class="form-group"><label>KAKS / Emsal Oranı</label><input type="number" id="calcKaks" placeholder="Örn: 1.5"></div><button class="btn-save" style="width:100%; margin-top:10px;" onclick="calcEmsal()">HESAPLA</button><div id="resEmsal" class="result-box" style="display:none;"></div></div><div id="tabVergi" class="tab-content"><div class="form-group"><label>Emlak Vergisi Hesapla</label></div><div style="display:flex; gap:10px;"><select id="calcVergiType" style="flex:1;"><option value="0.002">Konut (B.Şehir - %0.2)</option><option value="0.001">Konut (Normal - %0.1)</option><option value="0.004">İşyeri (B.Şehir - %0.4)</option><option value="0.002">İşyeri (Normal - %0.2)</option><option value="0.006">Arsa (B.Şehir - %0.6)</option></select><input type="number" id="calcVergiDeger" placeholder="Rayiç Bedel" style="flex:1;"></div><button class="btn-save" style="width:100%; margin-top:5px;" onclick="calcEmlakVergisi()">VERGİ HESAPLA</button><div id="resVergi" class="result-box" style="display:none; margin-bottom:15px;"></div></div></div></div>
 
 <script>
-    // --- VERİTABANI & AYARLAR ---
-    const antalyaData = {
-        "Akseki": ["Merkez", "Bademli", "Cevizli", "Güçlüköy", "Kuyucak", "Süleymaniye", "Yarpuz"],
-        "Aksu": ["Altıntaş", "Atatürk", "Barbaros", "Boztepe", "Cihadiye", "Çalkaya", "Çamköy", "Dumanlar", "Fatih", "Gökdere", "Güloluk", "Güzelyurt", "Hacıaliler", "Karaçallı", "Kemerağzı", "Konak", "Kundu", "Macun", "Mandırlar", "Murtuna", "Pınarlı", "Soğucaksu", "Solak", "Yurtpınar"],
-        "Alanya": ["Merkez", "Avsallar", "Cikcilli", "Çıplaklı", "Demirtaş", "Güller Pınarı", "Hacet", "İncekum", "Kargıcak", "Kestel", "Konaklı", "Küçükhasbahçe", "Mahmutlar", "Oba", "Okurcalar", "Payallar", "Saray", "Şekerhane", "Tosmur", "Türkler", "Yaylalı"],
-        "Demre": ["Merkez", "Beymelek", "Karabucak", "Kekova", "Yavu"],
-        "Döşemealtı": ["Altınkale", "Ayanlar", "Aydınlar", "Bahçeyaka", "Bıyıklı", "Camili", "Çığlık", "Çıplaklı", "Dağbeli", "Düzlerçamı", "Ekşili", "Ilıca", "Karaman", "Karataş", "Kovanlık", "Kömürcüler", "Nebiler", "Tomalar", "Yalınlı", "Yeniköy", "Yeşilbayır"],
-        "Elmalı": ["Merkez", "Karyağdı", "Gündoğan", "İplik Pazarı", "Toklular"],
-        "Finike": ["Merkez", "Eski", "Hasyurt", "İskele", "Kale", "Karşıyaka", "Kum", "Sahilkent", "Turunçova", "Yeni", "Yeşilyurt"],
-        "Gazipaşa": ["Merkez", "Pazarcı", "Gazi", "İstiklal", "Cumhuriyet", "Koru", "Bakılar", "Ekmel"],
-        "Gündoğmuş": ["Merkez", "Fatih", "Rasih Kaplan"],
-        "İbradı": ["Merkez", "Aşağı", "Yukarı", "Ormana"],
-        "Kaş": ["Merkez", "Andifli", "Gömbe", "Kalkan", "Kınık", "Ova", "Yeşilköy", "Gelemiş", "İslamlar", "Patara"],
-        "Kemer": ["Merkez", "Arslanbucak", "Beldibi", "Beycik", "Çamyuva", "Göynük", "Kiriş", "Kuzdere", "Tekirova", "Ulupınar", "Yeni"],
-        "Kepez": ["Ahatlı", "Altınova", "Atatürk", "Avni Tolunay", "Ayanoğlu", "Baraj", "Barış", "Başköy", "Beşkonak", "Çamlıbel", "Çankaya", "Demirel", "Duacı", "Duraliler", "Düdenbaşı", "Emek", "Erenköy", "Esentepe", "Fabrikalar", "Fatih", "Fevzi Çakmak", "Gazi", "Göksu", "Gülveren", "Gündoğdu", "Güneş", "Habibler", "Hüsnü Karakaş", "Kanal", "Karşıyaka", "Kazım Karabekir", "Kepez", "Kuzeyyaka", "Kültür", "Mehmet Akif", "Menderes", "Özgürlük", "Santral", "Sütçüler", "Şafak", "Teomanpaşa", "Ulus", "Ünsal", "Varsak", "Yavuz Selim", "Yeni", "Yeni Doğan", "Yeşiltepe", "Yeşilyurt", "Yükseliş", "Zafer", "Zeytinlik"],
-        "Konyaaltı": ["Akdamlar", "Akkuyu", "Altınkum", "Arapsuyu", "Aşağıkaraman", "Bahtılı", "Çağlarca", "Çakırlar", "Doyran", "Geyikbayırı", "Gökçam", "Gürsu", "Hacısekililer", "Hisarçandır", "Hurma", "Karatepe", "Kır", "Kuşkavağı", "Liman", "Molla Yusuf", "Öğretmenevleri", "Pınarbaşı", "Sarısu", "Siteler", "Toros", "Uluç", "Uncalı", "Yarbaşçandır", "Zümrüt"],
-        "Korkuteli": ["Merkez", "Alaaddin", "Aşağıpazar", "Kiremitli", "Uzunoluk", "Yeni", "Datköy"],
-        "Kumluca": ["Merkez", "Bağlık", "Beykonak", "Cumhuriyet", "Eskicami", "Göksu", "Karşıyaka", "Kasapçayırı", "Mavikent", "Meydan", "Narenciye", "Sarıcasu", "Temel Eğitim", "Yeni"],
-        "Manavgat": ["Merkez", "Aşağı Pazarcı", "Aşağı Hisar", "Bahçelievler", "Çağlayan", "Çolaklı", "Emek", "Eski Hisar", "Evrenseki", "Gündoğdu", "Ilıca", "Kasaplar", "Kavaklı", "Kızılağaç", "Kızılot", "Milli Egemenlik", "Mimarsinan", "Örnek", "Salkım Evler", "Sarılar", "Side", "Sorgun", "Şelale", "Taşağıl", "Ulukapı", "Yukarı Hisar", "Yukarı Pazarcı"],
-        "Muratpaşa": ["Altındağ", "Bahçelievler", "Balbey", "Barbaros", "Bayındır", "Cumhuriyet", "Çağlayan", "Çaybaşı", "Demircikara", "Deniz", "Doğuyaka", "Dutlubahçe", "Elmalı", "Ermenek", "Etiler", "Fener", "Gebizli", "Gençlik", "Güvenlik", "Güzelbağ", "Güzeloba", "Güzeloluk", "Haşimişcan", "Kışla", "Kırcami", "Kızıltoprak", "Kızılsaray", "Konuksever", "Mehmetçik", "Meltem", "Memurevleri", "Meydankavağı", "Muratpaşa", "Sedir", "Selçuk", "Sinan", "Soğuksu", "Şirinyalı", "Tahılpazarı", "Tarım", "Topçular", "Tuzcular", "Üçgen", "Varlık", "Yenigün", "Yeşilbahçe", "Yeşildere", "Yeşilova", "Yıldız", "Yüksekalan", "Zerdalilik", "Zümrütova"],
-        "Serik": ["Merkez", "Akçaalan", "Belek", "Belkıs", "Boğazkent", "Cumalı", "Çandır", "Gedik", "Kadriye", "Karadayı", "Kökez", "Kürüş", "Merkez", "Orta", "Yeni", "Yukarı Kocayatak"]
-    };
-
-    const floorList = ["Seçiniz...", "Giriş Altı Kot 4", "Giriş Altı Kot 3", "Giriş Altı Kot 2", "Giriş Altı Kot 1", "Bodrum", "Zemin", "Bahçe Katı", "Giriş", "Yüksek Giriş", "Müstakil", "Dubleks", "Tripleks", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30 ve üzeri"];
-    const roomList = ["Seçiniz...", "Stüdyo (1+0)", "1+1", "1.5+1", "2+0", "2+1", "2.5+1", "3+0", "3+1", "3.5+1", "4+0", "4+1", "4+2", "4+3", "4+4", "5+1", "5.5+1", "5+2", "6+1", "6+2", "7+1", "Villa", "Komple Bina"];
-
-    let portfolio = JSON.parse(localStorage.getItem('KaracabayRE_EST_DB_v13')) || [];
+    // --- PORTFOLIO DATA & SETTINGS ---
+    const antalyaData = { "Akseki": ["Merkez"], "Aksu": ["Altıntaş","Atatürk","Güzelyurt","Kundu","Macun"], "Alanya": ["Merkez","Avsallar","Mahmutlar","Oba"], "Döşemealtı": ["Altınkale","Bahçeyaka","Yeniköy","Yeşilbayır"], "Kepez": ["Atatürk","Barış","Gülveren","Kültür","Sütçüler","Varsak","Yeni"], "Konyaaltı": ["Altınkum","Gürsu","Hurma","Liman","Molla Yusuf","Uncalı"], "Muratpaşa": ["Bahçelievler","Çağlayan","Fener","Güzeloba","Kırcami","Lara","Meltem","Şirinyalı"], "Serik": ["Belek","Boğazkent","Kadriye","Merkez"] };
+    const floorList = ["Giriş", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "Dubleks", "Tripleks"];
+    const roomList = ["1+1", "2+1", "3+1", "4+1", "5+1", "Villa", "İşyeri"];
+    
+    // CRM DATA STORAGE
+    let crmData = JSON.parse(localStorage.getItem('KaracabayRE_CRM_v14')) || { investors: [], network: [] };
+    let portfolio = JSON.parse(localStorage.getItem('KaracabayRE_EST_DB_v14')) || [];
     let editingId = null;
 
     window.onload = function() { populateSelects(); renderTable(); };
 
-    // --- TEMEL FONKSİYONLAR ---
+    // --- HELPER FUNCTIONS ---
     function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
-    function formatPhone(input) {
-        let n = input.value.replace(/\D/g, ''); if(n.length===0){input.value='';return;}
-        if(n[0]!=='0') n='0'+n; n=n.substring(0,11);
-        let f = ''; if(n.length>0)f+=n.substring(0,1); if(n.length>1)f+=' ('+n.substring(1,4); if(n.length>4)f+=') '+n.substring(4,7); if(n.length>7)f+=' '+n.substring(7,9); if(n.length>9)f+=' '+n.substring(9,11);
-        input.value = f;
-    }
+    function formatPhone(input) { let n = input.value.replace(/\D/g, ''); if(n.length===0){input.value='';return;} if(n[0]!=='0') n='0'+n; n=n.substring(0,11); input.value = n; }
     function formatCurrency(input) { let v=input.value.replace(/\D/g, ''); input.value=v.replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
     function parsePrice(v) { return v ? parseInt(v.toString().replace(/\./g,'')) : 0; }
-
-    // --- MODAL YÖNETİMİ ---
     function openModal(id) { document.getElementById(id).style.display = 'block'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     function closeModalOutside(e, id) { if(e.target == document.getElementById(id)) closeModal(id); }
 
-    // --- HESAP MAKİNESİ ---
+    // --- CRM LOGIC ---
+    function openCRM() {
+        document.getElementById('crmModal').style.display = 'block';
+        renderInvestors();
+        renderNetwork();
+        // Varsayılan tarih olarak bugünü ata
+        document.getElementById('netLastCall').valueAsDate = new Date();
+    }
+
+    function switchCRMTab(tab) {
+        document.querySelectorAll('.crm-section').forEach(s => s.style.display = 'none');
+        document.querySelectorAll('.crm-tab').forEach(t => t.classList.remove('active'));
+        if(tab === 'investors') {
+            document.getElementById('crmInvestors').style.display = 'block';
+            document.getElementById('tab1').classList.add('active');
+        } else {
+            document.getElementById('crmNetwork').style.display = 'block';
+            document.getElementById('tab2').classList.add('active');
+        }
+    }
+
+    function addInvestor() {
+        const inv = {
+            id: Date.now(),
+            name: document.getElementById('invName').value,
+            city: document.getElementById('invCity').value,
+            phone: document.getElementById('invPhone').value,
+            req: document.getElementById('invRequest').value
+        };
+        if(!inv.name) { alert("Ad Soyad giriniz."); return; }
+        crmData.investors.push(inv);
+        saveCRM(); renderInvestors();
+        document.getElementById('invName').value = ''; document.getElementById('invPhone').value = ''; document.getElementById('invRequest').value = '';
+    }
+
+    function renderInvestors() {
+        const tbody = document.getElementById('investorTableBody'); tbody.innerHTML = '';
+        crmData.investors.forEach(inv => {
+            tbody.innerHTML += `<tr><td><b>${inv.name}</b></td><td>${inv.city}</td><td>${inv.phone}</td><td>${inv.req}</td><td><button onclick="delInvestor(${inv.id})" style="background:#c0392b;color:white;border:none;border-radius:3px;cursor:pointer;">Sil</button></td></tr>`;
+        });
+    }
+
+    function delInvestor(id) {
+        if(confirm('Silinsin mi?')) { crmData.investors = crmData.investors.filter(i => i.id !== id); saveCRM(); renderInvestors(); }
+    }
+
+    function addNetwork() {
+        const net = {
+            id: Date.now(),
+            name: document.getElementById('netName').value,
+            city: document.getElementById('netCity').value,
+            phone: document.getElementById('netPhone').value,
+            supply: document.getElementById('netSupply').value,
+            lastCall: document.getElementById('netLastCall').value
+        };
+        if(!net.name) { alert("Ad Soyad giriniz."); return; }
+        crmData.network.push(net);
+        saveCRM(); renderNetwork();
+        document.getElementById('netName').value = ''; document.getElementById('netPhone').value = ''; document.getElementById('netSupply').value = '';
+    }
+
+    function renderNetwork() {
+        const tbody = document.getElementById('networkTableBody'); tbody.innerHTML = '';
+        const today = new Date();
+        
+        crmData.network.forEach(net => {
+            let statusHtml = '<span class="crm-status-badge" style="background:#eee; color:#333;">Yeni</span>';
+            let rowClass = '';
+            
+            if(net.lastCall) {
+                const lastDate = new Date(net.lastCall);
+                const diffTime = Math.abs(today - lastDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                
+                if(diffDays > 45) {
+                    rowClass = 'row-alert';
+                    statusHtml = `<span class="crm-status-badge" style="background:white; color:#c0392b;">⚠️ ${diffDays} Gün!</span>`;
+                } else if (diffDays > 30) {
+                    rowClass = 'row-warning';
+                    statusHtml = `<span class="crm-status-badge" style="background:white; color:#e67e22;">⏳ ${diffDays} Gün</span>`;
+                } else {
+                    statusHtml = `<span class="crm-status-badge" style="background:#27ae60; color:white;">✅ ${diffDays} Gün</span>`;
+                }
+            }
+
+            tbody.innerHTML += `
+                <tr class="${rowClass}">
+                    <td>${statusHtml}</td>
+                    <td><b>${net.name}</b></td>
+                    <td>${net.city}</td>
+                    <td>${net.phone}</td>
+                    <td>${net.supply}</td>
+                    <td>${net.lastCall ? net.lastCall.split('-').reverse().join('.') : '-'}</td>
+                    <td><button onclick="updateCallDate(${net.id})" style="background:#2980b9; color:white; border:none; padding:5px; border-radius:3px; cursor:pointer; font-size:11px;">✅ Görüştüm (Sıfırla)</button></td>
+                    <td><button onclick="delNetwork(${net.id})" style="background:#c0392b; color:white; border:none; border-radius:3px; cursor:pointer;">Sil</button></td>
+                </tr>
+            `;
+        });
+    }
+
+    function updateCallDate(id) {
+        const idx = crmData.network.findIndex(n => n.id === id);
+        if(idx !== -1) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            crmData.network[idx].lastCall = todayStr;
+            saveCRM(); renderNetwork();
+        }
+    }
+
+    function delNetwork(id) {
+        if(confirm('Silinsin mi?')) { crmData.network = crmData.network.filter(n => n.id !== id); saveCRM(); renderNetwork(); }
+    }
+
+    function saveCRM() { localStorage.setItem('KaracabayRE_CRM_v14', JSON.stringify(crmData)); }
+
+    // --- OTHER TOOLS LOGIC ---
     let calcExp = "";
     function calcInput(v) { calcExp += v; document.getElementById('calcDisplay').value = calcExp; }
     function calcClear() { calcExp = ""; document.getElementById('calcDisplay').value = ""; }
     function calcResult() { try { calcExp = eval(calcExp).toString(); document.getElementById('calcDisplay').value = calcExp; } catch(e) { document.getElementById('calcDisplay').value = "Hata"; calcExp=""; } }
 
-    // --- DÖVİZ (TCMB Entegrasyonu) ---
     async function fetchCurrency() {
-        // Otomatik veri çekme (Piyasa verisi - Yaklaşık değer)
-        // TCMB'den direkt çekmek CORS hatası verdiği için free API kullanıyoruz.
-        try {
-            const res = await fetch('https://api.exchangerate-api.com/v4/latest/TRY');
-            const data = await res.json();
-            // API 1 TRY = X USD verir, tersini alıyoruz (1 USD = ? TRY)
-            let usd = (1 / data.rates.USD).toFixed(4);
-            let eur = (1 / data.rates.EUR).toFixed(4);
-            
-            // Eğer kutular boşsa doldur, doluysa (kullanıcı düzeltmişse) elleme
-            if(document.getElementById('usdRate').value === "") document.getElementById('usdRate').value = usd;
-            if(document.getElementById('eurRate').value === "") document.getElementById('eurRate').value = eur;
-        } catch(e) {
-            console.log("Kur verisi çekilemedi.");
-        }
+        try { const res = await fetch('https://api.exchangerate-api.com/v4/latest/TRY'); const data = await res.json();
+            if(document.getElementById('usdRate').value === "") document.getElementById('usdRate').value = (1 / data.rates.USD).toFixed(4);
+            if(document.getElementById('eurRate').value === "") document.getElementById('eurRate').value = (1 / data.rates.EUR).toFixed(4);
+        } catch(e) {}
     }
-
     function calculateCurrencyTotal() {
-        let amount = parseFloat(document.getElementById('calcCurrAmount').value);
-        let type = document.getElementById('calcCurrType').value;
-        let rate = 0;
-        
-        if(type === 'USD') rate = parseFloat(document.getElementById('usdRate').value);
-        else rate = parseFloat(document.getElementById('eurRate').value);
-
+        let amount = parseFloat(document.getElementById('calcCurrAmount').value); let type = document.getElementById('calcCurrType').value;
+        let rate = type === 'USD' ? parseFloat(document.getElementById('usdRate').value) : parseFloat(document.getElementById('eurRate').value);
         if(!amount || !rate) return;
-        
-        let total = amount * rate;
-        document.getElementById('currResText').innerText = total.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " TL";
+        document.getElementById('currResText').innerText = (amount * rate).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " TL";
         document.getElementById('currencyTotalRes').style.display = 'block';
     }
 
-    // --- EMLAK HESAPLARI ---
-    function switchTab(id) {
-        document.querySelectorAll('.tab-content').forEach(d => d.style.display='none');
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(id).style.display = 'block';
-        event.currentTarget.classList.add('active');
-    }
+    function switchTab(id) { document.querySelectorAll('.tab-content').forEach(d => d.style.display='none'); document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.getElementById(id).style.display = 'block'; event.currentTarget.classList.add('active'); }
+    function calcTapuKomisyon() { let p = parseFloat(document.getElementById('calcPrice').value); if(!p) return; let tapu = p * 0.04; let kom = p * 0.02 * 1.20; document.getElementById('resTapu').innerHTML = `<strong>Tapu Harcı (%4):</strong> ${tapu.toLocaleString()} TL<br><strong>Komisyon (%2+KDV):</strong> ${kom.toLocaleString()} TL`; document.getElementById('resTapu').style.display = 'block'; }
+    function calcEmsal() { let m2 = parseFloat(document.getElementById('calcArsaM2').value); let kaks = parseFloat(document.getElementById('calcKaks').value); if(!m2 || !kaks) return; document.getElementById('resEmsal').innerHTML = `İnşaat Alanı: <strong>${(m2*kaks).toLocaleString()} m²</strong>`; document.getElementById('resEmsal').style.display = 'block'; }
+    function calcEmlakVergisi() { let val = parseFloat(document.getElementById('calcVergiDeger').value); let rate = parseFloat(document.getElementById('calcVergiType').value); if(!val) return; document.getElementById('resVergi').innerHTML = `Vergi: <strong>${(val*rate).toLocaleString()} TL</strong>`; document.getElementById('resVergi').style.display = 'block'; }
 
-    function calcTapuKomisyon() {
-        let p = parseFloat(document.getElementById('calcPrice').value);
-        if(!p) return;
-        let tapu = p * 0.04;
-        let kom = p * 0.02 * 1.20;
-        
-        let html = `
-            <strong>Tapu Harcı (Toplam %4):</strong> ${tapu.toLocaleString()} TL<br>
-            <small>(Alıcı: ${(tapu/2).toLocaleString()} TL - Satıcı: ${(tapu/2).toLocaleString()} TL)</small><br><br>
-            <strong>Hizmet Bedeli (Tek Taraf %2+KDV):</strong> ${kom.toLocaleString()} TL<br>
-            <small>(Net: ${(p*0.02).toLocaleString()} TL + KDV: ${(p*0.02*0.2).toLocaleString()} TL)</small>
-        `;
-        document.getElementById('resTapu').innerHTML = html;
-        document.getElementById('resTapu').style.display = 'block';
-    }
-
-    function calcEmsal() {
-        let m2 = parseFloat(document.getElementById('calcArsaM2').value);
-        let kaks = parseFloat(document.getElementById('calcKaks').value);
-        if(!m2 || !kaks) return;
-        let insaat = m2 * kaks;
-        document.getElementById('resEmsal').innerHTML = `Toplam İnşaat Alanı: <strong>${insaat.toLocaleString()} m²</strong>`;
-        document.getElementById('resEmsal').style.display = 'block';
-    }
-
-    function calcEmlakVergisi() {
-        let val = parseFloat(document.getElementById('calcVergiDeger').value);
-        let rate = parseFloat(document.getElementById('calcVergiType').value);
-        if(!val) return;
-        let tax = val * rate;
-        document.getElementById('resVergi').innerHTML = `Yıllık Vergi: <strong>${tax.toLocaleString()} TL</strong>`;
-        document.getElementById('resVergi').style.display = 'block';
-    }
-
-    // --- CRUD ---
+    // --- MAIN PORTFOLIO CRUD ---
     function handleSave() {
-        const data = {
-            id: editingId ? editingId : Date.now(),
-            type: document.getElementById('inpType').value,
-            status: document.getElementById('inpStatus').value,
-            district: document.getElementById('inpDistrict').value,
-            neighborhood: document.getElementById('inpNeighborhood').value,
-            rooms: document.getElementById('inpRooms').value,
-            floor: document.getElementById('inpFloor').value,
-            gross: document.getElementById('inpGross').value,
-            net: document.getElementById('inpNet').value,
-            price: document.getElementById('inpPrice').value,
-            authStart: document.getElementById('inpAuthStart').value,
-            authEnd: document.getElementById('inpAuthEnd').value,
-            ref: document.getElementById('inpRef').value,
-            phone: document.getElementById('inpPhone').value,
-            link: document.getElementById('inpLink').value, 
-            desc: document.getElementById('inpDesc').value
-        };
-
-        if(!data.district || !data.price) { alert("HATA: İlçe ve Fiyat zorunludur!"); return; }
-
-        if (editingId) {
-            const index = portfolio.findIndex(p => p.id === editingId);
-            portfolio[index] = data;
-        } else {
-            portfolio.push(data);
-        }
+        const data = { id: editingId ? editingId : Date.now(), type: document.getElementById('inpType').value, status: document.getElementById('inpStatus').value, district: document.getElementById('inpDistrict').value, neighborhood: document.getElementById('inpNeighborhood').value, rooms: document.getElementById('inpRooms').value, floor: document.getElementById('inpFloor').value, gross: document.getElementById('inpGross').value, net: document.getElementById('inpNet').value, price: document.getElementById('inpPrice').value, authStart: document.getElementById('inpAuthStart').value, authEnd: document.getElementById('inpAuthEnd').value, ref: document.getElementById('inpRef').value, phone: document.getElementById('inpPhone').value, link: document.getElementById('inpLink').value, desc: document.getElementById('inpDesc').value };
+        if(!data.district || !data.price) { alert("İlçe ve Fiyat zorunlu!"); return; }
+        if (editingId) { portfolio[portfolio.findIndex(p => p.id === editingId)] = data; } else { portfolio.push(data); }
         saveToDisk(); renderTable(); resetForm();
     }
-
     function editRecord(id) {
-        const item = portfolio.find(p => p.id === id); if(!item) return;
-        editingId = id;
-        document.getElementById('formTitle').innerText = "✏️ Düzenleniyor...";
-        document.getElementById('btnSave').innerText = "GÜNCELLE"; document.getElementById('btnSave').style.background = "#f39c12"; 
-        document.getElementById('btnDelete').style.display = "block"; document.getElementById('btnCancel').style.display = "block";
-        
-        document.getElementById('inpType').value = item.type; document.getElementById('inpStatus').value = item.status;
-        document.getElementById('inpDistrict').value = item.district;
-        loadMahalleler('inpDistrict', 'dl_mahalle_ekle');
-        setTimeout(() => { document.getElementById('inpNeighborhood').value = item.neighborhood; }, 50);
-        document.getElementById('inpRooms').value = item.rooms; document.getElementById('inpFloor').value = item.floor;
-        document.getElementById('inpGross').value = item.gross || ''; document.getElementById('inpNet').value = item.net || '';
-        document.getElementById('inpPrice').value = item.price;
-        document.getElementById('inpAuthStart').value = item.authStart; document.getElementById('inpAuthEnd').value = item.authEnd;
-        document.getElementById('inpRef').value = item.ref; document.getElementById('inpPhone').value = item.phone;
-        let linkArea = document.getElementById('inpLink'); linkArea.value = item.link || ''; autoResize(linkArea);
-        let descArea = document.getElementById('inpDesc'); descArea.value = item.desc || ''; autoResize(descArea);
-        window.scrollTo(0,0);
+        const item = portfolio.find(p => p.id === id); if(!item) return; editingId = id;
+        document.getElementById('formTitle').innerText = "✏️ Düzenleniyor..."; document.getElementById('btnSave').innerText = "GÜNCELLE"; document.getElementById('btnSave').style.background = "#f39c12"; document.getElementById('btnDelete').style.display = "block"; document.getElementById('btnCancel').style.display = "block";
+        document.getElementById('inpType').value = item.type; document.getElementById('inpStatus').value = item.status; document.getElementById('inpDistrict').value = item.district;
+        loadMahalleler('inpDistrict', 'dl_mahalle_ekle'); setTimeout(() => { document.getElementById('inpNeighborhood').value = item.neighborhood; }, 50);
+        document.getElementById('inpRooms').value = item.rooms; document.getElementById('inpFloor').value = item.floor; document.getElementById('inpGross').value = item.gross; document.getElementById('inpNet').value = item.net; document.getElementById('inpPrice').value = item.price; document.getElementById('inpAuthStart').value = item.authStart; document.getElementById('inpAuthEnd').value = item.authEnd; document.getElementById('inpRef').value = item.ref; document.getElementById('inpPhone').value = item.phone; document.getElementById('inpLink').value = item.link; autoResize(document.getElementById('inpLink')); document.getElementById('inpDesc').value = item.desc; autoResize(document.getElementById('inpDesc')); window.scrollTo(0,0);
     }
-
     function deleteFromForm() { if(confirm('SİLİNECEK!')) { portfolio = portfolio.filter(item => item.id !== editingId); saveToDisk(); renderTable(); resetForm(); } }
-    function resetForm() {
-        editingId = null;
-        document.getElementById('formTitle').innerText = "➕ Yeni Portföy Ekle"; document.getElementById('btnSave').innerText = "KAYDET"; document.getElementById('btnSave').style.background = "#27ae60";
-        document.getElementById('btnDelete').style.display = "none"; document.getElementById('btnCancel').style.display = "none";
-        document.querySelectorAll('.input-panel input, .input-panel select, .input-panel textarea').forEach(i => i.value = '');
-        document.querySelectorAll('textarea.auto-expand').forEach(t => t.style.height = 'auto');
-        document.getElementById('inpType').value = "Daire"; document.getElementById('inpStatus').value = "Satılık";
-    }
-
-    function saveToDisk() { localStorage.setItem('KaracabayRE_EST_DB_v13', JSON.stringify(portfolio)); }
-    function downloadData() {
-        const content = JSON.stringify(portfolio, null, 4);
-        const a = document.createElement('a'); a.href = "data:text/plain;charset=utf-8," + encodeURIComponent(content);
-        a.download = "Karacabay_Yedek_" + new Date().toISOString().slice(0,10) + ".tkt"; document.body.appendChild(a); a.click(); a.remove();
+    function resetForm() { editingId = null; document.getElementById('formTitle').innerText = "➕ Yeni Portföy Ekle"; document.getElementById('btnSave').innerText = "KAYDET"; document.getElementById('btnSave').style.background = "#27ae60"; document.getElementById('btnDelete').style.display = "none"; document.getElementById('btnCancel').style.display = "none"; document.querySelectorAll('.input-panel input, .input-panel select, .input-panel textarea').forEach(i => i.value = ''); document.querySelectorAll('textarea.auto-expand').forEach(t => t.style.height = 'auto'); document.getElementById('inpType').value = "Daire"; document.getElementById('inpStatus').value = "Satılık"; }
+    function saveToDisk() { localStorage.setItem('KaracabayRE_EST_DB_v14', JSON.stringify(portfolio)); }
+    function downloadData() { 
+        // Hem Portföyü Hem CRM'i tek dosyada yedekle
+        const fullBackup = { portfolio: portfolio, crm: crmData };
+        const content = JSON.stringify(fullBackup, null, 4);
+        const a = document.createElement('a'); a.href = "data:text/plain;charset=utf-8," + encodeURIComponent(content); a.download = "Karacabay_FULL_Yedek_" + new Date().toISOString().slice(0,10) + ".tkt"; document.body.appendChild(a); a.click(); a.remove(); 
     }
     function uploadData(input) {
         const file = input.files[0]; if(!file) return;
         const reader = new FileReader(); reader.onload = function(e) {
-            try { if(confirm("Yedek yüklensin mi?")) { portfolio = JSON.parse(e.target.result); saveToDisk(); renderTable(); alert("Yüklendi!"); } } catch(err) { alert("Hata!"); }
+            try { 
+                if(confirm("Yedek yüklensin mi?")) { 
+                    const data = JSON.parse(e.target.result);
+                    // Eski format mı yeni format mı kontrolü
+                    if(data.portfolio) {
+                        portfolio = data.portfolio;
+                        crmData = data.crm || { investors: [], network: [] };
+                    } else {
+                        portfolio = data; // Eski format sadece portföy idi
+                    }
+                    saveToDisk(); saveCRM(); renderTable(); alert("Yüklendi!"); 
+                } 
+            } catch(err) { alert("Dosya hatası!"); }
         }; reader.readAsText(file);
     }
-
     function renderTable() {
-        const tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
-        const term = document.getElementById('searchBox').value.toLowerCase();
-        const fStatus = document.getElementById('filterStatus').value; const fRoom = document.getElementById('filterRooms').value; 
-        const fDist = document.getElementById('filterDistrict').value; const fNeigh = document.getElementById('filterNeighborhood').value.toLowerCase();
-        const minP = parsePrice(document.getElementById('filterMinPrice').value); const maxP = parsePrice(document.getElementById('filterMaxPrice').value);
-
-        const filtered = portfolio.filter(item => {
-            const txt = (item.district + item.neighborhood + item.ref + item.phone + item.desc + item.type).toLowerCase();
-            const p = parsePrice(item.price);
-            return txt.includes(term) && ((fRoom === 'all') || (item.rooms === fRoom)) && ((fStatus === 'all') || (item.status === fStatus)) &&
-                   (fDist === 'all' || item.district === fDist) && (fNeigh === '' || item.neighborhood.toLowerCase().includes(fNeigh)) &&
-                   (minP === 0 || p >= minP) && (maxP === 0 || p <= maxP);
-        });
-
+        const tbody = document.getElementById('tableBody'); tbody.innerHTML = ''; const term = document.getElementById('searchBox').value.toLowerCase();
+        const fStatus = document.getElementById('filterStatus').value; const fRoom = document.getElementById('filterRooms').value; const fDist = document.getElementById('filterDistrict').value; const fNeigh = document.getElementById('filterNeighborhood').value.toLowerCase(); const minP = parsePrice(document.getElementById('filterMinPrice').value); const maxP = parsePrice(document.getElementById('filterMaxPrice').value);
+        const filtered = portfolio.filter(item => { const txt = (item.district + item.neighborhood + item.ref + item.phone + item.desc + item.type).toLowerCase(); const p = parsePrice(item.price); return txt.includes(term) && ((fRoom === 'all') || (item.rooms === fRoom)) && ((fStatus === 'all') || (item.status === fStatus)) && (fDist === 'all' || item.district === fDist) && (fNeigh === '' || item.neighborhood.toLowerCase().includes(fNeigh)) && (minP === 0 || p >= minP) && (maxP === 0 || p <= maxP); });
         filtered.forEach(item => {
-            let badgeClass = ''; if(item.status.includes('Satıldı')||item.status.includes('Kiralandı')) badgeClass = 'kirmizi-etiket'; else if(item.status==='Kiralık') badgeClass = 'kiralik'; else badgeClass = 'satilik';
-            let authHtml = '<span style="color:#ccc;">-</span>';
-            if(item.authEnd) {
-                const today = new Date().toISOString().split('T')[0];
-                const color = item.authEnd < today ? '#c0392b' : '#27ae60';
-                authHtml = `<small style="color:#777">Bşl: ${item.authStart ? item.authStart.split('-').reverse().join('.') : '?'}</small><br><strong style="color:${color}; ${item.authEnd < today ? 'text-decoration:line-through' : ''}">${item.authEnd.split('-').reverse().join('.')}</strong>`;
-            }
-
-            let btnLinkHtml = '-';
-            if (item.link && item.link.trim() !== "") {
-                btnLinkHtml = '';
-                item.link.split('\n').forEach(l => {
-                    let rawUrl = l.trim();
-                    if(rawUrl !== "") {
-                        let lowerUrl = rawUrl.toLowerCase();
-                        let label = "Web Linki"; let btnColorClass = ""; let isFile = false;
-                        
-                        if(lowerUrl.includes("sahibinden") || lowerUrl.includes("shbd")) { label = "Sahibinden"; btnColorClass = "link-sahibinden"; }
-                        else if(lowerUrl.includes("hepsiemlak")) { label = "HepsiEmlak"; btnColorClass = "link-hepsi"; }
-                        else if(lowerUrl.includes("obudur")) { label = "Obudur"; btnColorClass = "link-obudur"; }
-                        else if(lowerUrl.includes("emlakjet")) { label = "EmlakJet"; btnColorClass = "link-emlakjet"; }
-                        else if(lowerUrl.includes("facebook") || lowerUrl.includes("instagram")) { label = "Sosyal Medya"; btnColorClass = "link-sosyal"; }
-                        else if(lowerUrl.includes("▸") || lowerUrl.includes("icloud") || lowerUrl.startsWith("/") || lowerUrl.startsWith("\\\\") || /^[a-z]:/i.test(rawUrl) || rawUrl.includes("\\") || /\.(pdf|docx?|xlsx?|txt|jpe?g|png)$/i.test(rawUrl)) {
-                            label = "Dosya"; btnColorClass = "link-dosya"; isFile = true;
-                        }
-
-                        let finalHref = rawUrl;
-                        if(!isFile && !finalHref.startsWith('http') && !finalHref.startsWith('//')) finalHref = 'https://' + finalHref;
-                        
-                        if(isFile) btnLinkHtml += `<button onclick="alert('Dosya Yolu:\\n${rawUrl.replace(/\\/g,'\\\\')}')" class="direct-link-btn ${btnColorClass} no-print" style="border:none; cursor:pointer;">${label}</button><br>`;
-                        else btnLinkHtml += `<a href="${finalHref}" target="_blank" class="direct-link-btn ${btnColorClass} no-print">${label}</a><br>`;
-                    }
-                });
-            }
-
-            let btnDesc = item.desc ? `<button onclick="document.getElementById('modalText').innerText='${item.desc.replace(/\n/g,'\\n').replace(/'/g, "\\'")}'; document.getElementById('descModal').style.display='block';" class="btn-icon no-print" style="background:#9b59b6; border:none; color:white; border-radius:3px; cursor:pointer; width:100%;">📝</button>` : '-';
-            let m2Display = (item.gross || '-') + ' / ' + (item.net || '-') + ' m²';
-
-            tbody.innerHTML += `<tr>
-                <td><span class="badge ${badgeClass}">${item.status}</span><br><small>${item.type}</small></td>
-                <td><b>${item.district}</b><br><small>${item.neighborhood}</small></td>
-                <td>${item.rooms || ''}<br><small>${item.floor || ''}</small></td>
-                <td style="font-size:12px; font-weight:600; color:#555;">${m2Display}</td>
-                <td style="color:#27ae60; font-weight:bold;">${item.price} ₺</td>
-                <td>${item.ref}<br><small style="font-family:monospace; font-weight:bold;">${item.phone || ''}</small></td>
-                <td>${authHtml}</td>
-                <td class="no-print" style="text-align:center;">${btnLinkHtml}</td>
-                <td class="no-print" style="text-align:center;">${btnDesc}</td>
-                <td class="no-print"><button onclick="editRecord(${item.id})" style="background:#3498db; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">DÜZENLE</button></td>
-                <td class="print-only" style="vertical-align:top;">${item.desc || '-'}</td>
-            </tr>`;
+            let badgeClass = item.status.includes('Satıldı')||item.status.includes('Kiralandı') ? 'kirmizi-etiket' : (item.status==='Kiralık'?'kiralik':'satilik');
+            let authHtml = '-'; if(item.authEnd) { const today = new Date().toISOString().split('T')[0]; authHtml = `<small style="color:#777">Bşl: ${item.authStart.split('-').reverse().join('.')}</small><br><strong style="color:${item.authEnd < today ? '#c0392b' : '#27ae60'}">${item.authEnd.split('-').reverse().join('.')}</strong>`; }
+            let btnLinkHtml = '-'; if (item.link && item.link.trim() !== "") { btnLinkHtml = ''; item.link.split('\n').forEach(l => { let r = l.trim(); if(r){ let lbl="Web Linki"; let cls=""; let isF=false; if(r.includes("sahibinden")) {lbl="Sahibinden";cls="link-sahibinden";} else if(r.includes("hepsi")) {lbl="HepsiEmlak";cls="link-hepsi";} else if(r.includes("obudur")) {lbl="Obudur";cls="link-obudur";} else if(r.includes("emlakjet")) {lbl="EmlakJet";cls="link-emlakjet";} else if(r.includes("facebook")||r.includes("instagram")){lbl="Sosyal";cls="link-sosyal";} else if(r.includes("▸")||r.includes("icloud")||r.startsWith("/")||r.startsWith("\\\\")||/^[a-z]:/i.test(r)||r.includes("\\")||/\.(pdf|docx?|txt|jpg|png)$/i.test(r)){lbl="Dosya";cls="link-dosya";isF=true;} let href=r; if(!isF && !href.startsWith('http')) href='https://'+href; if(isF) btnLinkHtml += `<button onclick="alert('Dosya Yolu:\\n${r.replace(/\\/g,'\\\\')}')" class="direct-link-btn ${cls} no-print" style="border:none;cursor:pointer;">${lbl}</button><br>`; else btnLinkHtml += `<a href="${href}" target="_blank" class="direct-link-btn ${cls} no-print">${lbl}</a><br>`; }}); }
+            let btnDesc = item.desc ? `<button onclick="document.getElementById('modalText').innerText='${item.desc.replace(/\n/g,'\\n').replace(/'/g, "\\'")}'; document.getElementById('descModal').style.display='block';" class="btn-icon no-print" style="background:#9b59b6;border:none;color:white;border-radius:3px;cursor:pointer;">📝</button>` : '-';
+            tbody.innerHTML += `<tr><td><span class="badge ${badgeClass}">${item.status}</span><br><small>${item.type}</small></td><td><b>${item.district}</b><br><small>${item.neighborhood}</small></td><td>${item.rooms}<br><small>${item.floor}</small></td><td>${item.gross}/${item.net} m²</td><td style="color:#27ae60;font-weight:bold;">${item.price} ₺</td><td>${item.ref}<br><small>${item.phone}</small></td><td>${authHtml}</td><td class="no-print" style="text-align:center;">${btnLinkHtml}</td><td class="no-print" style="text-align:center;">${btnDesc}</td><td class="no-print"><button onclick="editRecord(${item.id})" style="background:#3498db;color:white;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;">DÜZENLE</button></td><td class="print-only">${item.desc}</td></tr>`;
         });
     }
-
-    function populateSelects() {
-        const dS = document.getElementById('inpDistrict'); const fS = document.getElementById('filterDistrict');
-        Object.keys(antalyaData).sort().forEach(d => { dS.innerHTML += `<option>${d}</option>`; fS.innerHTML += `<option>${d}</option>`; });
-        const rS = document.getElementById('inpRooms'); const rF = document.getElementById('filterRooms');
-        roomList.forEach(r => { rS.innerHTML += `<option>${r}</option>`; rF.innerHTML += `<option>${r}</option>`; });
-        const flS = document.getElementById('inpFloor'); floorList.forEach(f => flS.innerHTML += `<option>${f}</option>`);
-    }
-
-    function loadMahalleler(src, trgId) {
-        const val = document.getElementById(src).value; const dataList = document.getElementById(trgId); dataList.innerHTML = '';
-        if(antalyaData[val]) { antalyaData[val].sort().forEach(m => { let opt = document.createElement('option'); opt.value = m; dataList.appendChild(opt); }); }
-        if(src === 'inpDistrict') document.getElementById('inpNeighborhood').value = '';
-        if(src === 'filterDistrict') { document.getElementById('filterNeighborhood').value = ''; renderTable(); }
-    }
+    function populateSelects() { const dS=document.getElementById('inpDistrict'), fS=document.getElementById('filterDistrict'); Object.keys(antalyaData).sort().forEach(d=>{dS.innerHTML+=`<option>${d}</option>`;fS.innerHTML+=`<option>${d}</option>`;}); const rS=document.getElementById('inpRooms'), rF=document.getElementById('filterRooms'); roomList.forEach(r=>{rS.innerHTML+=`<option>${r}</option>`;rF.innerHTML+=`<option>${r}</option>`;}); const fL=document.getElementById('inpFloor'); floorList.forEach(f=>fL.innerHTML+=`<option>${f}</option>`); }
+    function loadMahalleler(s,t) { const v=document.getElementById(s).value, d=document.getElementById(t); d.innerHTML=''; if(antalyaData[v]) antalyaData[v].sort().forEach(m=>{let o=document.createElement('option');o.value=m;d.appendChild(o);}); if(s==='inpDistrict')document.getElementById('inpNeighborhood').value=''; if(s==='filterDistrict'){document.getElementById('filterNeighborhood').value='';renderTable();} }
 </script>
 </body>
 </html>
