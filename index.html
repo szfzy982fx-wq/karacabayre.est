@@ -2,8 +2,10 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
+    <meta name="description" content="KARACABAYRE.EST - Kişisel Emlak Portföy Yönetim Aracı. Bu uygulama kişisel kullanım içindir, herhangi bir resmi kurum veya banka ile bağlantısı yoktur. Veriler sunucuda değil, tarayıcınızda saklanır.">
+    <meta name="author" content="Yılmaz Bey">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KARACABAYRE.EST Emlak Asistanı (v22)</title>
+    <meta name="robots" content="noindex, nofollow"> <title>KARACABAYRE.EST Emlak Asistanı (v23)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -87,12 +89,12 @@
             border: 1px solid #eee; 
             border-radius: 4px; 
             overscroll-behavior: contain;
-            -webkit-overflow-scrolling: touch; /* iPhone'da akıcı kaydırma */
-            background-color: white; /* Arka planı beyaza zorla */
+            -webkit-overflow-scrolling: touch; 
+            background-color: white; 
         }
         .crm-table { width: 100%; border-collapse: collapse; background-color: white; }
-        .crm-table tr { background-color: white; } /* iPhone şeffaflık sorunu çözümü */
-        .crm-table tr:hover { background-color: #f9f9f9; } /* Hover efekti */
+        .crm-table tr { background-color: white; }
+        .crm-table tr:hover { background-color: #f9f9f9; }
         .crm-table thead th { position: sticky; top: 0; z-index: 1; box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1); background-color: #34495e; color: white; }
         
         .row-alert { background-color: var(--alert-bg) !important; color: #721c24; }
@@ -111,10 +113,13 @@
         .tab-btn { flex: 1; padding: 10px; border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; }
         .tab-btn.active { border-bottom-color: var(--secondary); color: var(--secondary); font-weight: bold; }
         .tab-content { display: none; } .tab-content.active { display: block; }
+        
+        /* Footer Disclaimer */
+        .legal-footer { margin-top: 30px; text-align: center; color: #95a5a6; font-size: 11px; border-top: 1px solid #eee; padding-top: 10px; }
 
         .print-only { display: none; }
         @media print { 
-            .input-panel, .filter-bar, .backup-controls, .tools-bar { display: none !important; } 
+            .input-panel, .filter-bar, .backup-controls, .tools-bar, .legal-footer { display: none !important; } 
             .no-print { display: none !important; }
             .print-only { display: table-cell !important; }
             body { background: white; padding: 0; margin: 0; }
@@ -186,6 +191,11 @@
         <button onclick="window.print()" style="margin-left:auto; background:#8e44ad; border:none; color:white; padding:8px 15px; border-radius:4px; cursor:pointer;">🖨️ YAZDIR</button>
     </div>
     <table id="portfolioTable"><thead><tr><th width="8%">Cins/Tür</th><th width="12%">Lokasyon</th><th width="8%">Özellikler</th><th width="10%">m² (Brüt/Net)</th><th width="9%">Fiyat</th><th width="14%">Müşteri / Tel</th><th width="9%">Yetki</th><th class="no-print" width="6%" style="text-align:center;">Linkler</th><th class="no-print" width="5%" style="text-align:center;">Not</th><th class="no-print" width="8%">İşlem</th><th class="print-only">Açıklama / Notlar</th></tr></thead><tbody id="tableBody"></tbody></table>
+
+    <div class="legal-footer">
+        © 2026 KARACABAYRE.EST - Bu sayfa kişisel bir portföy yönetim aracıdır. Resmi bir kurum veya finansal kuruluş ile bağlantısı yoktur. <br>
+        Tüm veriler kullanıcının kendi cihazında (Local Storage) saklanır, sunucuya veri gönderilmez.
+    </div>
 </div>
 
 <div id="crmModal" class="modal" onclick="closeModalOutside(event, 'crmModal')">
@@ -268,24 +278,20 @@
     // --- HELPER FUNCTIONS ---
     function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
     
-    // DÜZELTİLDİ: Tek satırlık telefon (Portföy)
     function formatPhone(input) {
         let n = input.value.replace(/\D/g, ''); 
         if(n.length===0){input.value='';return;} 
         if(n[0]!=='0') n='0'+n; 
         n=n.substring(0,11); 
-        
         let f = "";
         if(n.length>0) f += n.substring(0,1);
         if(n.length>1) f += " (" + n.substring(1,4);
         if(n.length>4) f += ") " + n.substring(4,7);
         if(n.length>7) f += " " + n.substring(7,9);
         if(n.length>9) f += " " + n.substring(9,11);
-        
         input.value = f;
     }
 
-    // DÜZELTİLDİ: Çok satırlık telefon (CRM)
     function formatPhoneMulti(input) {
         let lines = input.value.split('\n');
         let formattedLines = lines.map(line => {
@@ -299,84 +305,22 @@
     function formatCurrency(input) { let v=input.value.replace(/\D/g, ''); input.value=v.replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
     function parsePrice(v) { return v ? parseInt(v.toString().replace(/\./g,'')) : 0; }
     
-    // --- MODAL & SCROLL LOCK LOGIC ---
-    function openModal(id) { 
-        document.getElementById(id).style.display = 'block'; 
-        document.body.classList.add('no-scroll'); 
-    }
-    function closeModal(id) { 
-        document.getElementById(id).style.display = 'none'; 
-        document.body.classList.remove('no-scroll'); 
-    }
-    function closeModalOutside(e, id) { 
-        if(e.target == document.getElementById(id)) closeModal(id); 
-    }
+    function openModal(id) { document.getElementById(id).style.display = 'block'; document.body.classList.add('no-scroll'); }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; document.body.classList.remove('no-scroll'); }
+    function closeModalOutside(e, id) { if(e.target == document.getElementById(id)) closeModal(id); }
 
     // --- CRM LOGIC ---
-    function openCRM() {
-        openModal('crmModal');
-        renderInvestors();
-        renderNetwork();
-        document.getElementById('netLastCall').valueAsDate = new Date();
-    }
-
-    function switchCRMTab(tab) {
-        document.querySelectorAll('.crm-section').forEach(s => s.style.display = 'none');
-        document.querySelectorAll('.crm-tab').forEach(t => t.classList.remove('active'));
-        if(tab === 'investors') { document.getElementById('crmInvestors').style.display = 'block'; document.getElementById('tab1').classList.add('active'); } 
-        else { document.getElementById('crmNetwork').style.display = 'block'; document.getElementById('tab2').classList.add('active'); }
-        resetCRMForm('investors'); resetCRMForm('network');
-    }
-
-    function saveCRMInvestor() {
-        const inv = { id: crmEditingId ? crmEditingId : Date.now(), name: document.getElementById('invName').value, city: document.getElementById('invCity').value, phone: document.getElementById('invPhone').value, req: document.getElementById('invRequest').value };
-        if(!inv.name) { alert("Ad Soyad giriniz."); return; }
-        if(crmEditingId) { crmData.investors[crmData.investors.findIndex(i => i.id === crmEditingId)] = inv; } else { crmData.investors.push(inv); }
-        saveCRM(); renderInvestors(); resetCRMForm('investors');
-    }
-    function editCRMInvestor(id) {
-        const item = crmData.investors.find(i => i.id === id); if(!item) return; crmEditingId = id;
-        document.getElementById('invName').value = item.name; document.getElementById('invCity').value = item.city; document.getElementById('invPhone').value = item.phone; autoResize(document.getElementById('invPhone')); document.getElementById('invRequest').value = item.req; autoResize(document.getElementById('invRequest'));
-        document.getElementById('btnInvSave').innerText = "GÜNCELLE"; document.getElementById('btnInvSave').style.background = "#f39c12"; document.getElementById('btnInvDelete').style.display = "block"; document.getElementById('btnInvCancel').style.display = "block";
-    }
+    function openCRM() { openModal('crmModal'); renderInvestors(); renderNetwork(); document.getElementById('netLastCall').valueAsDate = new Date(); }
+    function switchCRMTab(tab) { document.querySelectorAll('.crm-section').forEach(s => s.style.display = 'none'); document.querySelectorAll('.crm-tab').forEach(t => t.classList.remove('active')); if(tab === 'investors') { document.getElementById('crmInvestors').style.display = 'block'; document.getElementById('tab1').classList.add('active'); } else { document.getElementById('crmNetwork').style.display = 'block'; document.getElementById('tab2').classList.add('active'); } resetCRMForm('investors'); resetCRMForm('network'); }
+    function saveCRMInvestor() { const inv = { id: crmEditingId ? crmEditingId : Date.now(), name: document.getElementById('invName').value, city: document.getElementById('invCity').value, phone: document.getElementById('invPhone').value, req: document.getElementById('invRequest').value }; if(!inv.name) { alert("Ad Soyad giriniz."); return; } if(crmEditingId) { crmData.investors[crmData.investors.findIndex(i => i.id === crmEditingId)] = inv; } else { crmData.investors.push(inv); } saveCRM(); renderInvestors(); resetCRMForm('investors'); }
+    function editCRMInvestor(id) { const item = crmData.investors.find(i => i.id === id); if(!item) return; crmEditingId = id; document.getElementById('invName').value = item.name; document.getElementById('invCity').value = item.city; document.getElementById('invPhone').value = item.phone; autoResize(document.getElementById('invPhone')); document.getElementById('invRequest').value = item.req; autoResize(document.getElementById('invRequest')); document.getElementById('btnInvSave').innerText = "GÜNCELLE"; document.getElementById('btnInvSave').style.background = "#f39c12"; document.getElementById('btnInvDelete').style.display = "block"; document.getElementById('btnInvCancel').style.display = "block"; }
     function deleteCRMInvestor() { if(confirm('Silinsin mi?')) { crmData.investors = crmData.investors.filter(i => i.id !== crmEditingId); saveCRM(); renderInvestors(); resetCRMForm('investors'); } }
-
-    function saveCRMNetwork() {
-        const net = { id: crmEditingId ? crmEditingId : Date.now(), name: document.getElementById('netName').value, city: document.getElementById('netCity').value, phone: document.getElementById('netPhone').value, supply: document.getElementById('netSupply').value, lastCall: document.getElementById('netLastCall').value };
-        if(!net.name) { alert("Ad Soyad giriniz."); return; }
-        if(crmEditingId) { crmData.network[crmData.network.findIndex(n => n.id === crmEditingId)] = net; } else { crmData.network.push(net); }
-        saveCRM(); renderNetwork(); resetCRMForm('network');
-    }
-    function editCRMNetwork(id) {
-        const item = crmData.network.find(n => n.id === id); if(!item) return; crmEditingId = id;
-        document.getElementById('netName').value = item.name; document.getElementById('netCity').value = item.city; document.getElementById('netPhone').value = item.phone; autoResize(document.getElementById('netPhone')); document.getElementById('netSupply').value = item.supply; autoResize(document.getElementById('netSupply')); document.getElementById('netLastCall').value = item.lastCall;
-        document.getElementById('btnNetSave').innerText = "GÜNCELLE"; document.getElementById('btnNetSave').style.background = "#f39c12"; document.getElementById('btnNetDelete').style.display = "block"; document.getElementById('btnNetCancel').style.display = "block";
-    }
+    function saveCRMNetwork() { const net = { id: crmEditingId ? crmEditingId : Date.now(), name: document.getElementById('netName').value, city: document.getElementById('netCity').value, phone: document.getElementById('netPhone').value, supply: document.getElementById('netSupply').value, lastCall: document.getElementById('netLastCall').value }; if(!net.name) { alert("Ad Soyad giriniz."); return; } if(crmEditingId) { crmData.network[crmData.network.findIndex(n => n.id === crmEditingId)] = net; } else { crmData.network.push(net); } saveCRM(); renderNetwork(); resetCRMForm('network'); }
+    function editCRMNetwork(id) { const item = crmData.network.find(n => n.id === id); if(!item) return; crmEditingId = id; document.getElementById('netName').value = item.name; document.getElementById('netCity').value = item.city; document.getElementById('netPhone').value = item.phone; autoResize(document.getElementById('netPhone')); document.getElementById('netSupply').value = item.supply; autoResize(document.getElementById('netSupply')); document.getElementById('netLastCall').value = item.lastCall; document.getElementById('btnNetSave').innerText = "GÜNCELLE"; document.getElementById('btnNetSave').style.background = "#f39c12"; document.getElementById('btnNetDelete').style.display = "block"; document.getElementById('btnNetCancel').style.display = "block"; }
     function deleteCRMNetwork() { if(confirm('Silinsin mi?')) { crmData.network = crmData.network.filter(n => n.id !== crmEditingId); saveCRM(); renderNetwork(); resetCRMForm('network'); } }
-
-    function resetCRMForm(type) {
-        crmEditingId = null;
-        if(type === 'investors') {
-            document.getElementById('invName').value = ''; document.getElementById('invPhone').value = ''; document.getElementById('invRequest').value = '';
-            document.getElementById('btnInvSave').innerText = "EKLE"; document.getElementById('btnInvSave').style.background = "#27ae60"; document.getElementById('btnInvDelete').style.display = "none"; document.getElementById('btnInvCancel').style.display = "none";
-        } else {
-            document.getElementById('netName').value = ''; document.getElementById('netPhone').value = ''; document.getElementById('netSupply').value = ''; document.getElementById('netLastCall').valueAsDate = new Date();
-            document.getElementById('btnNetSave').innerText = "EKLE"; document.getElementById('btnNetSave').style.background = "#27ae60"; document.getElementById('btnNetDelete').style.display = "none"; document.getElementById('btnNetCancel').style.display = "none";
-        }
-    }
+    function resetCRMForm(type) { crmEditingId = null; if(type === 'investors') { document.getElementById('invName').value = ''; document.getElementById('invPhone').value = ''; document.getElementById('invRequest').value = ''; document.getElementById('btnInvSave').innerText = "EKLE"; document.getElementById('btnInvSave').style.background = "#27ae60"; document.getElementById('btnInvDelete').style.display = "none"; document.getElementById('btnInvCancel').style.display = "none"; } else { document.getElementById('netName').value = ''; document.getElementById('netPhone').value = ''; document.getElementById('netSupply').value = ''; document.getElementById('netLastCall').valueAsDate = new Date(); document.getElementById('btnNetSave').innerText = "EKLE"; document.getElementById('btnNetSave').style.background = "#27ae60"; document.getElementById('btnNetDelete').style.display = "none"; document.getElementById('btnNetCancel').style.display = "none"; } }
     function renderInvestors() { const tbody = document.getElementById('investorTableBody'); tbody.innerHTML = ''; crmData.investors.forEach(inv => { tbody.innerHTML += `<tr><td><b>${inv.name}</b></td><td>${inv.city}</td><td style="white-space:pre-wrap;">${inv.phone}</td><td style="white-space:pre-wrap;">${inv.req}</td><td><button onclick="editCRMInvestor(${inv.id})" style="background:#3498db;color:white;border:none;border-radius:3px;padding:4px 8px;cursor:pointer;">DÜZENLE</button></td></tr>`; }); }
-    function renderNetwork() {
-        const tbody = document.getElementById('networkTableBody'); tbody.innerHTML = ''; const today = new Date();
-        crmData.network.forEach(net => {
-            let statusHtml = '<span class="crm-status-badge" style="background:#eee; color:#333;">Yeni</span>'; let rowClass = '';
-            if(net.lastCall) { const lastDate = new Date(net.lastCall); const diffTime = Math.abs(today - lastDate); const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                if(diffDays > 45) { rowClass = 'row-alert'; statusHtml = `<span class="crm-status-badge" style="background:white; color:#c0392b;">⚠️ ${diffDays} Gün!</span>`; } 
-                else if (diffDays > 30) { rowClass = 'row-warning'; statusHtml = `<span class="crm-status-badge" style="background:white; color:#e67e22;">⏳ ${diffDays} Gün</span>`; } 
-                else { statusHtml = `<span class="crm-status-badge" style="background:#27ae60; color:white;">✅ ${diffDays} Gün</span>`; }
-            }
-            tbody.innerHTML += `<tr class="${rowClass}"><td>${statusHtml}</td><td><b>${net.name}</b></td><td>${net.city}</td><td style="white-space:pre-wrap;">${net.phone}</td><td style="white-space:pre-wrap;">${net.supply}</td><td>${net.lastCall ? net.lastCall.split('-').reverse().join('.') : '-'}</td><td><button onclick="updateCallDate(${net.id})" style="background:#2980b9; color:white; border:none; padding:5px; border-radius:3px; cursor:pointer; font-size:11px;">✅ Görüştüm (Sıfırla)</button></td><td><button onclick="editCRMNetwork(${net.id})" style="background:#3498db; color:white; border:none; padding:4px 8px; border-radius:3px; cursor:pointer;">DÜZENLE</button></td></tr>`;
-        });
-    }
+    function renderNetwork() { const tbody = document.getElementById('networkTableBody'); tbody.innerHTML = ''; const today = new Date(); crmData.network.forEach(net => { let statusHtml = '<span class="crm-status-badge" style="background:#eee; color:#333;">Yeni</span>'; let rowClass = ''; if(net.lastCall) { const lastDate = new Date(net.lastCall); const diffTime = Math.abs(today - lastDate); const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); if(diffDays > 45) { rowClass = 'row-alert'; statusHtml = `<span class="crm-status-badge" style="background:white; color:#c0392b;">⚠️ ${diffDays} Gün!</span>`; } else if (diffDays > 30) { rowClass = 'row-warning'; statusHtml = `<span class="crm-status-badge" style="background:white; color:#e67e22;">⏳ ${diffDays} Gün</span>`; } else { statusHtml = `<span class="crm-status-badge" style="background:#27ae60; color:white;">✅ ${diffDays} Gün</span>`; } } tbody.innerHTML += `<tr class="${rowClass}"><td>${statusHtml}</td><td><b>${net.name}</b></td><td>${net.city}</td><td style="white-space:pre-wrap;">${net.phone}</td><td style="white-space:pre-wrap;">${net.supply}</td><td>${net.lastCall ? net.lastCall.split('-').reverse().join('.') : '-'}</td><td><button onclick="updateCallDate(${net.id})" style="background:#2980b9; color:white; border:none; padding:5px; border-radius:3px; cursor:pointer; font-size:11px;">✅ Görüştüm (Sıfırla)</button></td><td><button onclick="editCRMNetwork(${net.id})" style="background:#3498db; color:white; border:none; padding:4px 8px; border-radius:3px; cursor:pointer;">DÜZENLE</button></td></tr>`; }); }
     function updateCallDate(id) { const idx = crmData.network.findIndex(n => n.id === id); if(idx !== -1) { crmData.network[idx].lastCall = new Date().toISOString().split('T')[0]; saveCRM(); renderNetwork(); } }
     function saveCRM() { localStorage.setItem('KaracabayRE_CRM_v19', JSON.stringify(crmData)); }
 
