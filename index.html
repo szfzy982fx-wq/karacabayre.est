@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KARACABAYRE.EST Emlak Asistanı (v21)</title>
+    <title>KARACABAYRE.EST Emlak Asistanı (v22)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -81,8 +80,20 @@
         .crm-input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; align-items: start; }
         .crm-buttons { display: flex; gap: 10px; margin-top: 15px; justify-content: flex-end; }
         
-        .table-scroll-wrapper { height: 50vh; overflow-y: auto; border: 1px solid #eee; border-radius: 4px; overscroll-behavior: contain; }
-        .crm-table thead th { position: sticky; top: 0; z-index: 1; box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1); }
+        /* IPHONE & IOS FIXES */
+        .table-scroll-wrapper { 
+            height: 50vh; 
+            overflow-y: auto; 
+            border: 1px solid #eee; 
+            border-radius: 4px; 
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch; /* iPhone'da akıcı kaydırma */
+            background-color: white; /* Arka planı beyaza zorla */
+        }
+        .crm-table { width: 100%; border-collapse: collapse; background-color: white; }
+        .crm-table tr { background-color: white; } /* iPhone şeffaflık sorunu çözümü */
+        .crm-table tr:hover { background-color: #f9f9f9; } /* Hover efekti */
+        .crm-table thead th { position: sticky; top: 0; z-index: 1; box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1); background-color: #34495e; color: white; }
         
         .row-alert { background-color: var(--alert-bg) !important; color: #721c24; }
         .row-warning { background-color: var(--warning-bg) !important; color: #856404; }
@@ -274,7 +285,7 @@
         input.value = f;
     }
 
-    // DÜZELTİLDİ: Çok satırlık telefon (CRM) - Zaten çalışıyordu, koruduk.
+    // DÜZELTİLDİ: Çok satırlık telefon (CRM)
     function formatPhoneMulti(input) {
         let lines = input.value.split('\n');
         let formattedLines = lines.map(line => {
