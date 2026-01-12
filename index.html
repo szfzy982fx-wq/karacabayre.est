@@ -2,10 +2,10 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
+    <meta name="description" content="KARACABAYRE.EST - Kişisel Emlak Yönetim Paneli">
     <meta name="robots" content="noindex, nofollow, noarchive">
-    <meta name="googlebot" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>KARACABAYRE.EST - Giriş</title>
+    <title>KARACABAYRE.EST - Güvenli Giriş</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -21,7 +21,7 @@
         body { font-family: 'Segoe UI', sans-serif; background: #eef2f3; margin: 0; padding: 20px; color: #333; }
         body.no-scroll { overflow: hidden; } 
 
-        /* GİRİŞ EKRANI STİLLERİ (KAMUFLAJ) */
+        /* GİRİŞ EKRANI (KAMUFLAJ) */
         #loginOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #2c3e50; z-index: 99999;
@@ -43,7 +43,7 @@
         }
 
         /* ANA UYGULAMA (GİZLİ BAŞLAR) */
-        #appContainer { display: none; } /* Şifre girilene kadar gizli */
+        #appContainer { display: none; }
 
         .container { max-width: 1800px; margin: 0 auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
@@ -90,9 +90,23 @@
         .filter-bar { background: var(--primary); padding: 15px; border-radius: 6px; display: flex; gap: 10px; flex-wrap: wrap; color: white; align-items: center; }
         .filter-bar input, .filter-bar select { padding: 8px; border: none; border-radius: 4px; color: #333; }
 
-        /* Modals */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; overflow-y: auto; }
-        .modal-content { background: white; margin: 2% auto; padding: 25px; width: 90%; border-radius: 8px; position: relative; max-height: 95vh; display: flex; flex-direction: column; }
+        /* Modals & FIXES */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; overflow-y: hidden; }
+        
+        .modal-content { 
+            background: white; 
+            margin: 3% auto; /* Üstten biraz boşluk */
+            padding: 25px; 
+            width: 90%; 
+            border-radius: 8px; 
+            position: relative; 
+            max-height: 85vh; /* Ekranın %85'ini geçmesin */
+            display: flex; 
+            flex-direction: column;
+            overflow-y: auto; /* İÇERİK TAŞARSA KUTU İÇİNDE KAYDIR */
+            -webkit-overflow-scrolling: touch; /* iPad için akıcı kaydırma */
+        }
+
         .modal-body { overflow-y: auto; margin-top: 15px; padding-right: 10px; }
         .tool-modal-content { width: 450px; margin: 10% auto; }
 
@@ -104,7 +118,7 @@
         .crm-input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; align-items: start; }
         .crm-buttons { display: flex; gap: 10px; margin-top: 15px; justify-content: flex-end; }
         
-        /* IPHONE & IOS FIXES */
+        /* IPHONE FIX */
         .table-scroll-wrapper { 
             height: 50vh; 
             overflow-y: auto; 
@@ -135,7 +149,6 @@
         .tab-btn { flex: 1; padding: 10px; border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; }
         .tab-btn.active { border-bottom-color: var(--secondary); color: var(--secondary); font-weight: bold; }
         .tab-content { display: none; } .tab-content.active { display: block; }
-        
         .legal-footer { margin-top: 30px; text-align: center; color: #95a5a6; font-size: 11px; border-top: 1px solid #eee; padding-top: 10px; }
 
         .print-only { display: none; }
@@ -224,8 +237,7 @@
             <button onclick="window.print()" style="margin-left:auto; background:#8e44ad; border:none; color:white; padding:8px 15px; border-radius:4px; cursor:pointer;">🖨️ YAZDIR</button>
         </div>
         <table id="portfolioTable"><thead><tr><th width="8%">Cins/Tür</th><th width="12%">Lokasyon</th><th width="8%">Özellikler</th><th width="10%">m² (Brüt/Net)</th><th width="9%">Fiyat</th><th width="14%">Müşteri / Tel</th><th width="9%">Yetki</th><th class="no-print" width="6%" style="text-align:center;">Linkler</th><th class="no-print" width="5%" style="text-align:center;">Not</th><th class="no-print" width="8%">İşlem</th><th class="print-only">Açıklama / Notlar</th></tr></thead><tbody id="tableBody"></tbody></table>
-        
-        <div class="legal-footer">Veriler yerel tarayıcıda saklanır. Harici sunucuya veri gönderilmez. (v24 Safe)</div>
+        <div class="legal-footer">Veriler yerel tarayıcıda saklanır. (v26 Safe+Data+ScrollFix)</div>
     </div>
 </div>
 
@@ -291,23 +303,36 @@
 <div id="realEstateCalcModal" class="modal" onclick="closeModalOutside(event, 'realEstateCalcModal')"><div class="modal-content" style="width:500px;"><div style="display:flex;justify-content:space-between; margin-bottom:10px;"><h3>🧾 Emlak Hesaplamaları</h3><span onclick="closeModal('realEstateCalcModal')" style="cursor:pointer;font-size:24px;">&times;</span></div><div class="tab-buttons"><button class="tab-btn active" onclick="switchTab('tabTapu')">Tapu & Komisyon</button><button class="tab-btn" onclick="switchTab('tabEmsal')">Emsal</button><button class="tab-btn" onclick="switchTab('tabVergi')">Emlak Vergisi</button></div><div id="tabTapu" class="tab-content active"><div class="form-group"><label>Satış Bedeli (TL)</label><input type="number" id="calcPrice" placeholder="Örn: 5000000"></div><button class="btn-save" style="width:100%; margin-top:10px;" onclick="calcTapuKomisyon()">HESAPLA</button><div id="resTapu" class="result-box" style="display:none; text-align:left; font-size:13px;"></div></div><div id="tabEmsal" class="tab-content"><div class="form-group"><label>Arsa Alanı (m²)</label><input type="number" id="calcArsaM2"></div><div class="form-group"><label>KAKS / Emsal Oranı</label><input type="number" id="calcKaks" placeholder="Örn: 1.5"></div><button class="btn-save" style="width:100%; margin-top:10px;" onclick="calcEmsal()">HESAPLA</button><div id="resEmsal" class="result-box" style="display:none;"></div></div><div id="tabVergi" class="tab-content"><div class="form-group"><label>Emlak Vergisi Hesapla</label></div><div style="display:flex; gap:10px;"><select id="calcVergiType" style="flex:1;"><option value="0.002">Konut (B.Şehir - %0.2)</option><option value="0.001">Konut (Normal - %0.1)</option><option value="0.004">İşyeri (B.Şehir - %0.4)</option><option value="0.002">İşyeri (Normal - %0.2)</option><option value="0.006">Arsa (B.Şehir - %0.6)</option></select><input type="number" id="calcVergiDeger" placeholder="Rayiç Bedel" style="flex:1;"></div><button class="btn-save" style="width:100%; margin-top:5px;" onclick="calcEmlakVergisi()">VERGİ HESAPLA</button><div id="resVergi" class="result-box" style="display:none; margin-bottom:15px;"></div></div></div></div>
 
 <script>
-    // LOGIN LOGIC
-    function checkLogin() {
-        const pin = document.getElementById('loginPin').value;
-        if(pin === "1923") {
-            document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('appContainer').style.display = 'block';
-            window.scrollTo(0,0);
-        } else {
-            alert("Hatalı Şifre!");
-            document.getElementById('loginPin').value = '';
-        }
-    }
+    // LOGIN
+    function checkLogin() { if(document.getElementById('loginPin').value==="1923"){document.getElementById('loginOverlay').style.display='none';document.getElementById('appContainer').style.display='block';window.scrollTo(0,0);}else{alert("Hatalı Şifre!");document.getElementById('loginPin').value='';} }
 
-    const antalyaData = { "Akseki": ["Merkez"], "Aksu": ["Altıntaş","Atatürk","Güzelyurt","Kundu","Macun"], "Alanya": ["Merkez","Avsallar","Mahmutlar","Oba"], "Döşemealtı": ["Altınkale","Bahçeyaka","Yeniköy","Yeşilbayır"], "Kepez": ["Atatürk","Barış","Gülveren","Kültür","Sütçüler","Varsak","Yeni"], "Konyaaltı": ["Altınkum","Gürsu","Hurma","Liman","Molla Yusuf","Uncalı"], "Muratpaşa": ["Bahçelievler","Çağlayan","Fener","Güzeloba","Kırcami","Lara","Meltem","Şirinyalı"], "Serik": ["Belek","Boğazkent","Kadriye","Merkez"] };
-    const floorList = ["Giriş", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "Dubleks", "Tripleks"];
-    const roomList = ["1+1", "2+1", "3+1", "4+1", "5+1", "Villa", "İşyeri"];
+    // --- DETAYLI VERİ SETİ (ANTALYA TÜM MAHALLELER) ---
+    const antalyaData = {
+        "Akseki": ["Merkez","Alaçeşme","Bademli","Cevizli","Değirmenlik","Güçlüköy","Kuyucak","Murtiçi","Sadıklar","Yarpuz"],
+        "Aksu": ["Altıntaş","Atatürk","Barbaros","Boztepe","Cihadiye","Cumhuriyet","Çalkaya","Çamköy","Dumanlar","Fatih","Gökdere","Güloluk","Güzelyurt","Hacıaliler","Karaçallı","Kemerağzı","Konak","Kundu","Kurşunlu","Macun","Mandırlar","Murtuna","Pınarlı","Soğucaksu","Solak","Topallı","Yurtpınar"],
+        "Alanya": ["Merkez","Avsallar","Cikcilli","Çıplaklı","Demirtaş","Güller Pınarı","Hacet","İncekum","Kadıpaşa","Kargıcak","Kestel","Konaklı","Küçükhasbahçe","Mahmutlar","Oba","Okurcalar","Payallar","Saray","Şekerhane","Tosmur","Türkler"],
+        "Demre": ["Merkez","Beymelek","Karabucak","Yavu"],
+        "Döşemealtı": ["Ahırtaş","Akkoç","Altınkale","Aşağıoba","Ayanlar","Aydınlar","Bademağacı","Bahçeyaka","Bıyıklı","Camili","Çığlık","Dağbeli","Dereli","Düzlerçamı","Ekşili","Ilıca","Karataş","Kevşirler","Kovanlık","Kömürcüler","Nebiler","Orta","Tomalar","Yağca","Yeniköy","Yeşilbayır"],
+        "Elmalı": ["Merkez","Gündoğan","İplik Pazarı","Karyağdı","Toklular","Yeni"],
+        "Finike": ["Merkez","Eski","Hasyurt","İskele","Kum","Sahilkent","Turunçova","Yeşilyurt"],
+        "Gazipaşa": ["Merkez","Aydın","Bakılar","Beyobası","Cumhuriyet","Ekmel","Gazi","İstiklal","Koru","Pazarcı","Yeni"],
+        "Gündoğmuş": ["Merkez"],
+        "İbradı": ["Merkez","Aydınkent","Ormana"],
+        "Kaş": ["Merkez","Andifli","Gökseki","Kalkan","Kınık","Ova","Yeşilköy"],
+        "Kemer": ["Merkez","Arslanbucak","Beldibi","Beycik","Çamyuva","Göynük","Kiriş","Kuzdere","Tekirova","Yeni"],
+        "Kepez": ["Ahatlı","Altınova Düden","Altınova Orta","Altınova Sinan","Atatürk","Avni Tolunay","Ayanoğlu","Aydoğdu","Barış","Baraj","Başköy","Beşkonak","Çamlıbel","Çankaya","Demirel","Duacı","Duraliler","Düdenbaşı","Emek","Erenköy","Esentepe","Fabrikalar","Fatih","Fevzi Çakmak","Gazi","Göksu","Gülveren","Gündoğdu","Güneş","Habibler","Hüsnü Karakaş","Kanal","Karşıyaka","Kazım Karabekir","Kepez","Kültür","Kütükçü","Kuzeyyaka","Mehmet Akif","Menderes","Namık Kemal","Odabaşı","Özgürlük","Santral","Sütçüler","Şafak","Teomanpaşa","Ulus","Ünsal","Varsak Ayanoğlu","Varsak Esentepe","Varsak Karşıyaka","Varsak Menderes","Yavuz Selim","Yeni","Yeni Doğan","Yeni Emek","Yeşiltepe","Yeşilyurt","Yükseliş","Zafer","Zeytinlik"],
+        "Konyaaltı": ["Akdamlar","Akkuyu","Altınkum","Arapsuyu","Aşağıkaraman","Bahtılı","Çağlarca","Çakırlar","Gökçam","Gökdere","Gürsu","Hacısekililer","Hisarçandır","Hurma","Karatepe","Kır","Kuruçay","Kuşkavağı","Liman","Molla Yusuf","Öğretmenevleri","Pınarbaşı","Sarısu","Siteler","Toros","Uncalı","Üçoluk","Yarbaşçandır","Yeni","Zümrüt"],
+        "Korkuteli": ["Merkez","Aşağıpazar","Kiremitli","Uzunoluk","Yeni"],
+        "Kumluca": ["Merkez","Adrasan","Beykonak","Mavikent","Temel Eğitim","Yeni"],
+        "Manavgat": ["Merkez","Aşağı Hisar","Aşağı Pazarcı","Bahçelievler","Çağlayan","Çolaklı","Emek","Eski Hisar","Evrenseki","Ilıca","Kasaplar","Kavaklı","Kızılağaç","Kızılot","Milli Egemenlik","Mimarsinan","Örnek","Salkım Evler","Sarılar","Side","Sorgun","Şelale","Yayla","Yukarı Hisar","Yukarı Pazarcı"],
+        "Muratpaşa": ["Altındağ","Bahçelievler","Balbey","Barbaros","Bayındır","Cumhuriyet","Çağlayan","Çaybaşı","Demircikara","Deniz","Doğuyaka","Dutlubahçe","Elmalı","Ermenek","Etiler","Fener","Gebizli","Gençlik","Güvenlik","Güzelbağ","Güzeloba","Güzeloluk","Haşim İşcan","Kırcami","Kışla","Kızıltoprak","Kızılsaray","Konuksever","Kuşkavağı","Lara","Mehmetçik","Meltem","Memurevleri","Meydankavağı","Muratpaşa","Sedir","Selçuk","Sinan","Soğuksu","Şirinyalı","Tahılpazarı","Tarım","Topçular","Tuzcular","Üçgen","Varlık","Yenigöl","Yenigün","Yeşilbahçe","Yeşildere","Yeşilova","Yıldız","Yüksekalan","Zerdalilik","Zümrütova"],
+        "Serik": ["Merkez","Abdurrahmanlar","Akçaalan","Belek","Belkıs","Boğazkent","Cumalı","Dikmen","Gedik","Kadriye","Karadayı","Kökez","Kürüş","Merkez","Orta","Yeni","Yukarı Kocayatak"]
+    };
+
+    const floorList = ["Giriş Altı (Kot 1)","Giriş Altı (Kot 2)","Giriş Altı (Kot 3)","Bodrum Kat","Yarı Bodrum","Zemin Kat","Giriş Katı","Yüksek Giriş","1. Kat","2. Kat","3. Kat","4. Kat","5. Kat","6. Kat","7. Kat","8. Kat","9. Kat","10. Kat","11. Kat","12. Kat","13. Kat","14. Kat","15. Kat","16. Kat","17. Kat","18. Kat","19. Kat","20. Kat","21. Kat","22. Kat","23. Kat","24. Kat","25. Kat","26. Kat","27. Kat","28. Kat","29. Kat","30. Kat","En Üst Kat","Çatı Katı","Bahçe Dubleksi","Çatı Dubleksi","Ters Dubleks","Giriş Dubleks","Villa Tipi","Müstakil","Komple Bina"];
     
+    const roomList = ["1+0 (Stüdyo)","1+1","1.5+1","2+0","2+1","2.5+1","3+1","3.5+1","4+1","4+2","5+1","5+2","6+1","6+2","7+1","7+2","Villa","Müstakil Ev","Dükkan / Mağaza","Ofis / Büro","Depo / Antrepo","Komple Bina","Arsa","Tarla"];
+
     // DB
     let crmData = JSON.parse(localStorage.getItem('KaracabayRE_CRM_v19')) || { investors: [], network: [] };
     let portfolio = JSON.parse(localStorage.getItem('KaracabayRE_EST_DB_v19')) || [];
@@ -326,7 +351,7 @@
     function closeModal(id) { document.getElementById(id).style.display = 'none'; document.body.classList.remove('no-scroll'); }
     function closeModalOutside(e, id) { if(e.target == document.getElementById(id)) closeModal(id); }
 
-    // --- LOGIC FUNCTIONS (Shortened for brevity, same as v22) ---
+    // --- LOGIC FUNCTIONS ---
     function openCRM() { openModal('crmModal'); renderInvestors(); renderNetwork(); document.getElementById('netLastCall').valueAsDate = new Date(); }
     function switchCRMTab(tab) { document.querySelectorAll('.crm-section').forEach(s => s.style.display = 'none'); document.querySelectorAll('.crm-tab').forEach(t => t.classList.remove('active')); if(tab === 'investors') { document.getElementById('crmInvestors').style.display = 'block'; document.getElementById('tab1').classList.add('active'); } else { document.getElementById('crmNetwork').style.display = 'block'; document.getElementById('tab2').classList.add('active'); } resetCRMForm('investors'); resetCRMForm('network'); }
     function saveCRMInvestor() { const inv = { id: crmEditingId ? crmEditingId : Date.now(), name: document.getElementById('invName').value, city: document.getElementById('invCity').value, phone: document.getElementById('invPhone').value, req: document.getElementById('invRequest').value }; if(!inv.name) { alert("Ad Soyad giriniz."); return; } if(crmEditingId) { crmData.investors[crmData.investors.findIndex(i => i.id === crmEditingId)] = inv; } else { crmData.investors.push(inv); } saveCRM(); renderInvestors(); resetCRMForm('investors'); }
